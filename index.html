@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PQC - Percentual de Queima Corporal (HFA)</title>
     <!-- CSS Externo com parâmetro de versão para bypass de cache -->
-    <link rel="stylesheet" href="css/style.css?v=2.1">
+    <link rel="stylesheet" href="css/style.css?v=2.2">
 </head>
 <body>
     <div class="container">
@@ -125,9 +125,9 @@
                     </div>
                 </div>
 
-                <!-- 3. BALANÇO HÍDRICO -->
+                <!-- 3. BALANÇO HÍDRICO & TONICIDADE -->
                 <div class="card">
-                    <div class="card-title">3. Correção por Balanço Hídrico</div>
+                    <div class="card-title">3. Balanço Hídrico & Tonicidade</div>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="entradas">Outras Entradas (mL)</label>
@@ -147,6 +147,22 @@
                         <div class="form-group">
                             <label for="compressas">Compressas de Sangue (Qtd)</label>
                             <input type="number" id="compressas" placeholder="300 mL cada">
+                        </div>
+
+                        <!-- Parâmetros da Infusão / Tonicidade -->
+                        <div class="form-group">
+                            <label for="naSerico">Sódio Sérico [Na⁺] (mEq/L)</label>
+                            <input type="number" id="naSerico" step="0.1" placeholder="Ex: 140" value="140">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="naInfusao">Cristalóide de Ressuscitação</label>
+                            <select id="naInfusao">
+                                <option value="130" selected>Ringer Lactato (130 mEq/L Na⁺)</option>
+                                <option value="154">Soro Fisiológico 0.9% (154 mEq/L Na⁺)</option>
+                                <option value="140">Plasmalyte (140 mEq/L Na⁺)</option>
+                                <option value="77">SG 5% com NaCl 0.45% (77 mEq/L Na⁺)</option>
+                            </select>
                         </div>
 
                         <div class="form-group full-width">
@@ -186,6 +202,10 @@
                         <div class="metric-row">
                             <span>Balanço Hídrico Acumulado:</span>
                             <span class="metric-value" style="color: var(--accent-red);" id="res-balanco">0 mL</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Impacto Osmolar Projetado (ΔNa⁺):</span>
+                            <span class="metric-value" style="color: var(--text-main);" id="res-impacto-na">--</span>
                         </div>
                     </div>
                 </div>

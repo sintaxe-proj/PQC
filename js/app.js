@@ -2,10 +2,12 @@
 // Controladora principal da interface e cálculos clínicos do PQC-HFA
 
 import { SVGInteractive } from './SVGInteractive.js';
+import { FluidBalance } from './fluidBalance.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Inicializa o seletor vetorial do mapa corporal
+    // 1. Inicializa o seletor vetorial (SVG) e a calculadora de balanço hídrico
     const bodyMap = new SVGInteractive('body-map', 'scq-display');
+    const fluidCalculator = new FluidBalance();
 
     const btnCalcular = document.getElementById('btn-calcular');
     const pqcForm = document.getElementById('pqc-form');
@@ -32,13 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const horaAcidenteVal = document.getElementById('horaAcidente').value;
         const scq = parseFloat(document.getElementById('scq-display').innerText) || 0;
 
-        // Entradas e Saídas para o Balanço Hídrico
-        const entradas = parseFloat(document.getElementById('entradas').value) || 0;
-        const diurese = parseFloat(document.getElementById('diurese').value) || 0;
-        const emese = parseFloat(document.getElementById('emese').value) || 0;
-        const compressas = parseFloat(document.getElementById('compressas').value) || 0;
-        const outrasPerdas = parseFloat(document.getElementById('outrasPerdas').value) || 0;
-
         // Fator da Fórmula de Parkland (2 mL para térmico/químico, 4 mL para inflamável/elétrico)
         const fatoresElevados = ['inflamavel', 'eletrico'];
         const fatorParkland = fatoresElevados.includes(tipoAcidente) ? 4 : 2;
@@ -60,12 +55,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const volManutencao = volumeTotal24h * 0.5;
         const vazaoManutencaoMLh = volManutencao / 16;
 
-        // Balanço Hídrico (Considerando 300 mL por compressa cirúrgica retida)
-        const perdaCompressas = compressas * 300;
-        const totalSaidas = diurese + emese + perdaCompressas + outrasPerdas;
-        const balancoFinal = entradas - totalSaidas;
+        // 4. Cálculo do Balanço Hídrico via módulo FluidBalance
+        const balancoResult = fluidCalculator.calculate({
+            entradas: document.getElementById('entradas').value,
+            diurese: document.getElementById('diurese').value,
+            emese: document.getElementById('emese').value,
+            compressas: document.getElementById('compressas').value,
+            outrasPerdas: document.getElementById('outrasPerdas').value
+        });
 
-        // Renderização dos resultados no painel de saída
+        // 5. Renderização dos resultados no painel de saída
         document.getElementById('res-fator').innerText = `${fatorParkland} mL / kg / % SCQ`;
         document.getElementById('res-vol-total').innerText = `${volumeTotal24h.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
         document.getElementById('res-vol-ataque').innerText = `${volAtaque.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL (${tempoRestanteAtaque.toFixed(1)}h restantes)`;
@@ -73,13 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('res-vol-manutencao').innerText = `${volManutencao.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL (${vazaoManutencaoMLh.toFixed(1)} mL/h)`;
         
         const elBalanco = document.getElementById('res-balanco');
-        const sinal = balancoFinal > 0 ? '+' : '';
-        elBalanco.innerText = `${sinal}${balancoFinal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
+        const sinal = balancoResult.balancoFinal > 0 ? '+' : '';
+        elBalanco.innerText = `${sinal}${balancoResult.balancoFinal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
         
         // Cor dinâmica do Balanço Hídrico
-        if (balancoFinal < 0) {
+        if (balancoResult.balancoFinal < 0) {
             elBalanco.style.color = 'var(--accent-red)';
-        } else if (balancoFinal > 0) {
+        } else if (balancoResult.balancoFinal > 0) {
             elBalanco.style.color = 'var(--accent-green)';
         } else {
             elBalanco.style.color = 'var(--text-main)';

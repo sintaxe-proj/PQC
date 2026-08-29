@@ -5,35 +5,16 @@ import { SVGInteractive } from './SVGInteractive.js';
 import { FluidBalance } from './fluidBalance.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Variável global de estado para o SCQ
-    let scqCalculado = 0;
-
-    // 2. Inicializa o seletor vetorial (SVG) com callback de atualização em tempo real
-    const bodyMap = new SVGInteractive('body-map', (totalSCQ) => {
-        scqCalculado = totalSCQ;
-        
-        // Atualiza a badge visual na tela
-        const elDisplay = document.getElementById('scq-display');
-        if (elDisplay) {
-            elDisplay.innerText = `${totalSCQ.toFixed(1)}%`;
-        }
-    });
-
+    // 1. Inicializa o seletor vetorial (SVG) e a calculadora de balanço hídrico
+    const bodyMap = new SVGInteractive('body-map', 'scq-display');
     const fluidCalculator = new FluidBalance();
 
     const btnCalcular = document.getElementById('btn-calcular');
     const pqcForm = document.getElementById('pqc-form');
-    const inputIdade = document.getElementById('idade');
+    const inputDataNascimento = document.getElementById('dataNascimento');
+    const labelFaixaEtaria = document.getElementById('faixa-etaria-label');
 
-    // 3. Atualiza as proporções de Lund-Browder ao alterar a idade
-    if (inputIdade) {
-        inputIdade.addEventListener('input', (e) => {
-            const idade = parseFloat(e.target.value) || 0;
-            bodyMap.setAgeGroup(idade);
-        });
-    }
-
-    // 4. Preenche a data/hora do acidente com o horário atual por padrão
+    // 2. Preenche a data/hora do acidente com o horário atual por padrão
     const inputHoraAcidente = document.getElementById('horaAcidente');
     if (inputHoraAcidente && !inputHoraAcidente.value) {
         const agora = new Date();
@@ -41,7 +22,39 @@ document.addEventListener('DOMContentLoaded', () => {
         inputHoraAcidente.value = agora.toISOString().slice(0, 16);
     }
 
-    // 5. Listener do botão de cálculo
+    // 3. Listener para mudança na Data de Nascimento (Ajuste Lund-Browder)
+    if (inputDataNascimento) {
+        inputDataNascimento.addEventListener('change', (e) => {
+            const dataNascVal = e.target.value;
+            if (!dataNascVal) return;
+
+            const dataNasc = new Date(dataNascVal);
+            const hoje = new Date();
+            
+            // Cálculo da idade exata em anos
+            let idade = hoje.getFullYear() - dataNasc.getFullYear();
+            const m = hoje.getMonth() - dataNasc.getMonth();
+            if (m < 0 || (m === 0 && hoje.getDate() < dataNasc.getDate())) {
+                idade--;
+            }
+
+            // Atualiza os percentuais das regiões SVG via método da classe SVGInteractive
+            if (typeof bodyMap.atualizarLundBrowder === 'function') {
+                bodyMap.atualizarLundBrowder(idade);
+            }
+
+            // Atualiza o rótulo visual da Faixa Etária
+            if (labelFaixaEtaria) {
+                if (idade < 1) labelFaixaEtaria.innerText = 'Lund-Browder: Lactente (<1 ano)';
+                else if (idade <= 4) labelFaixaEtaria.innerText = `Lund-Browder: Infantil (${idade} anos)`;
+                else if (idade <= 9) labelFaixaEtaria.innerText = `Lund-Browder: Escolar (${idade} anos)`;
+                else if (idade <= 14) labelFaixaEtaria.innerText = `Lund-Browder: Jovem (${idade} anos)`;
+                else labelFaixaEtaria.innerText = 'Lund-Browder: Adulto (15+ anos)';
+            }
+        });
+    }
+
+    // 4. Listener do botão de cálculo
     if (btnCalcular) {
         btnCalcular.addEventListener('click', () => {
             // Validação nativa dos campos do formulário
@@ -54,13 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const peso = parseFloat(document.getElementById('peso')?.value) || 0;
             const tipoAcidente = document.getElementById('tipoAcidente')?.value || 'direto';
             const horaAcidenteVal = document.getElementById('horaAcidente')?.value;
-
-            // Extração segura do SCQ (prioriza a variável de estado, faz fallback limpando o texto)
-            let scq = scqCalculado;
-            if (scq === 0) {
-                const textDisplay = document.getElementById('scq-display')?.innerText || '0';
-                scq = parseFloat(textDisplay.replace(/[^0-9.]/g, '')) || 0;
-            }
+            const scq = parseFloat(document.getElementById('scq-display')?.innerText) || 0;
 
             if (scq === 0) {
                 alert('Por favor, selecione ao menos uma região do corpo afetada no mapa.');
@@ -88,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const volManutencao = volumeTotal24h * 0.5;
             const vazaoManutencaoMLh = volManutencao / 16;
 
-            // 6. Cálculo do Balanço Hídrico via módulo FluidBalance
+            // 5. Cálculo do Balanço Hídrico via módulo FluidBalance
             const balancoResult = fluidCalculator.calculate({
                 entradas: document.getElementById('entradas')?.value,
                 diurese: document.getElementById('diurese')?.value,
@@ -97,27 +104,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 outrasPerdas: document.getElementById('outrasPerdas')?.value
             });
 
-            // 7. Renderização dos resultados no painel de saída
-            const elFator = document.getElementById('res-fator');
-            if (elFator) elFator.innerText = `${fatorParkland} mL / kg / % SCQ`;
-
-            const elVolTotal = document.getElementById('res-vol-total');
-            if (elVolTotal) elVolTotal.innerText = `${volumeTotal24h.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
-
-            const elVolAtaque = document.getElementById('res-vol-ataque');
-            if (elVolAtaque) elVolAtaque.innerText = `${volAtaque.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL (${tempoRestanteAtaque.toFixed(1)}h restantes)`;
-
-            const elVazaoAtaque = document.getElementById('res-vazao-ataque');
-            if (elVazaoAtaque) elVazaoAtaque.innerText = `${vazaoAtaqueMLh.toFixed(1)} mL/h`;
-
-            const elVolManutencao = document.getElementById('res-vol-manutencao');
-            if (elVolManutencao) elVolManutencao.innerText = `${volManutencao.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL (${vazaoManutencaoMLh.toFixed(1)} mL/h)`;
-
+            // 6. Renderização dos resultados no painel de saída
+            document.getElementById('res-fator').innerText = `${fatorParkland} mL / kg / % SCQ`;
+            document.getElementById('res-vol-total').innerText = `${volumeTotal24h.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
+            document.getElementById('res-vol-ataque').innerText = `${volAtaque.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL (${tempoRestanteAtaque.toFixed(1)}h restantes)`;
+            document.getElementById('res-vazao-ataque').innerText = `${vazaoAtaqueMLh.toFixed(1)} mL/h`;
+            document.getElementById('res-vol-manutencao').innerText = `${volManutencao.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL (${vazaoManutencaoMLh.toFixed(1)} mL/h)`;
+            
             const elBalanco = document.getElementById('res-balanco');
             if (elBalanco && balancoResult) {
                 const sinal = balancoResult.balancoFinal > 0 ? '+' : '';
                 elBalanco.innerText = `${sinal}${balancoResult.balancoFinal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
-
+                
                 // Cor dinâmica do Balanço Hídrico
                 if (balancoResult.balancoFinal < 0) {
                     elBalanco.style.color = 'var(--accent-red)';

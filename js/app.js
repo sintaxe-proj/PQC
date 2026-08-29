@@ -1,8 +1,9 @@
 // js/app.js
-// Controladora principal da interface, interações SVG e cálculos do PQC-HFA
+// Controladora principal da interface, interações SVG, cálculos e módulo PIA/SCA
 
 import { SVGInteractive } from './SVGInteractive.js';
 import { FluidBalance } from './fluidBalance.js';
+import { PIAModule } from './piaModule.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Inicializa o seletor vetorial (SVG) e o módulo de balanço hídrico
@@ -45,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. Identificação de Idade e Ajuste Dinâmico Lund-Browder
-    let idadeCalculada = 30; // Padrão adulto caso não informada
+    let idadeCalculada = 30; // Padrão adulto
     if (inputDataNascimento) {
         inputDataNascimento.addEventListener('change', (e) => {
             const dataNascVal = e.target.value;
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 bodyMap.atualizarLundBrowder(idade);
             }
 
-            // Atualiza o indicador visual da faixa etária
+            // Atualiza indicador da faixa etária
             if (labelFaixaEtaria) {
                 if (idade < 1) labelFaixaEtaria.innerText = 'Lund-Browder: Lactente (<1 ano)';
                 else if (idade <= 4) labelFaixaEtaria.innerText = `Lund-Browder: Infantil (${idade} anos)`;
@@ -80,13 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. Listener Principal do Botão de Cálculo
     if (btnCalcular) {
         btnCalcular.addEventListener('click', () => {
-            // Validação de formulário
             if (pqcForm && !pqcForm.checkValidity()) {
                 pqcForm.reportValidity();
                 return;
             }
 
-            // Coleta de dados
             const peso = parseFloat(document.getElementById('peso')?.value) || 0;
             const altura = parseFloat(document.getElementById('altura')?.value) || 170;
             const tipoAcidente = document.getElementById('tipoAcidente')?.value || 'direto';
@@ -98,29 +97,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Fator de Parkland (2 mL para térmico/químico, 4 mL para inflamável/elétrico)
+            // Fator de Parkland
             const fatoresElevados = ['inflamavel', 'eletrico'];
             const fatorParkland = fatoresElevados.includes(tipoAcidente) ? 4 : 2;
             const volumeTotal24h = fatorParkland * peso * scq;
 
-            // Ajuste temporal da infusão
+            // Ajuste temporal
             const dataAcidente = horaAcidenteVal ? new Date(horaAcidenteVal) : new Date();
             const agora = new Date();
             const diffHoras = Math.max(0, (agora - dataAcidente) / (1000 * 60 * 60));
 
             const volAtaque = volumeTotal24h * 0.5;
-            const tempoRestanteAtaque = Math.max(8 - diffHoras, 0.5); // Divisor de segurança (30 min min.)
+            const tempoRestanteAtaque = Math.max(8 - diffHoras, 0.5);
             const vazaoAtaqueMLh = volAtaque / tempoRestanteAtaque;
 
-            const volManutencao = volumeTotal24h * 0.5;
-            const vazaoManutencaoMLh = volManutencao / 16;
-
-            // Avaliação da Diurese Real e Sugestão de Ajuste da Bomba
+            // Avaliação Renal
             const diureseVal = document.getElementById('diurese')?.value;
             const horasDiureseVal = document.getElementById('horasDiurese')?.value;
             const avaliacaoRenal = fluidCalculator.evaluateUrineOutput(diureseVal, horasDiureseVal, peso, idadeCalculada);
 
-            // Cálculo do Balanço Hídrico, Perda Evaporativa e Impacto Osmolar (Adrogué-Madias)
+            // Balanço Hídrico, Perda Evaporativa e ΔNa⁺
             const balancoResult = fluidCalculator.calculate({
                 entradas: document.getElementById('entradas')?.value,
                 diurese: diureseVal,
@@ -135,50 +131,82 @@ document.addEventListener('DOMContentLoaded', () => {
                 volumeParklandML: volumeTotal24h
             });
 
-            // 6. Exibição de Resultados no Painel
+            // Avaliação de PIA e SCA
+            const valPia = parseFloat(document.getElementById('piaValor')?.value);
+            const unidadePia = document.getElementById('piaUnidade')?.value || 'mmHg';
+            const valPam = parseFloat(document.getElementById('pam')?.value);
+            const temDisfuncao = document.getElementById('disfuncaoOrgao')?.value === 'sim';
+
+            const avaliacaoPIA = PIAModule.evaluate(valPia, unidadePia, valPam, temDisfuncao);
+
+            // 6. Exibição dos Resultados no Painel
             document.getElementById('res-fator').innerText = `${fatorParkland} mL/kg/% SCQ`;
             document.getElementById('res-vol-total').innerText = `${volumeTotal24h.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
             document.getElementById('res-vazao-ataque').innerText = `${vazaoAtaqueMLh.toFixed(1)} mL/h (${volAtaque.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL em ${tempoRestanteAtaque.toFixed(1)}h)`;
 
-            // Diurese e Recomendação de Vazão da Bomba
+            // Diurese e Bomba
             document.getElementById('res-diurese-kgh').innerText = `${avaliacaoRenal.diureseKgH} mL/kg/h (Meta: ${avaliacaoRenal.metaTexto})`;
             const elAjuste = document.getElementById('res-ajuste-bomba');
             if (elAjuste) {
                 elAjuste.innerText = avaliacaoRenal.recomendacao;
-                if (avaliacaoRenal.status === 'oliguria') {
-                    elAjuste.style.color = 'var(--accent-red)';
-                } else if (avaliacaoRenal.status === 'poliuria') {
-                    elAjuste.style.color = 'var(--accent-amber)';
-                } else {
-                    elAjuste.style.color = 'var(--accent-green)';
-                }
+                elAjuste.style.color = avaliacaoRenal.status === 'oliguria' ? 'var(--accent-red)' : (avaliacaoRenal.status === 'poliuria' ? 'var(--accent-amber)' : 'var(--accent-green)');
             }
 
-            // Perda Evaporativa e Balanço
+            // Perdas e Balanço
             document.getElementById('res-perda-evaporativa').innerText = `${balancoResult.perdaEvaporativa24h.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
             const elBalanco = document.getElementById('res-balanco');
             if (elBalanco) {
                 const sinal = balancoResult.balancoFinal > 0 ? '+' : '';
                 elBalanco.innerText = `${sinal}${balancoResult.balancoFinal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
-                elBalanco.style.color = balancoResult.balancoFinal < 0 ? 'var(--accent-red)' : (balancoResult.balancoFinal > 0 ? 'var(--accent-green)' : 'var(--text-main)');
+                elBalanco.style.color = balancoResult.balancoFinal < 0 ? 'var(--accent-red)' : 'var(--accent-green)';
             }
 
-            // Impacto Osmolar (ΔNa⁺)
+            // Impacto Osmolar
             const elImpactoNa = document.getElementById('res-impacto-na');
             if (elImpactoNa) {
                 const sinalNa = balancoResult.variacaoNaEstimada > 0 ? '+' : '';
                 elImpactoNa.innerText = `${sinalNa}${balancoResult.variacaoNaEstimada} mEq/L (Proj: ${balancoResult.naSericoProjetado} mEq/L)`;
-                
-                if (Math.abs(balancoResult.variacaoNaEstimada) >= 8) {
-                    elImpactoNa.style.color = 'var(--accent-red)';
-                } else if (Math.abs(balancoResult.variacaoNaEstimada) >= 4) {
-                    elImpactoNa.style.color = 'var(--accent-amber)';
-                } else {
-                    elImpactoNa.style.color = 'var(--text-main)';
+            }
+
+            // Resultados PIA e PPA
+            const elPiaClass = document.getElementById('res-pia-class');
+            if (elPiaClass) {
+                elPiaClass.innerText = avaliacaoPIA.classificacao;
+                elPiaClass.style.color = avaliacaoPIA.cor;
+            }
+
+            const elPpaVal = document.getElementById('res-ppa-valor');
+            if (elPpaVal) {
+                elPpaVal.innerText = avaliacaoPIA.ppa !== null ? `${avaliacaoPIA.ppa} mmHg (Meta ≥ 60)` : 'PAM não informada';
+                if (avaliacaoPIA.ppa !== null && avaliacaoPIA.ppa < 60) {
+                    elPpaVal.style.color = 'var(--accent-red)';
+                } else if (avaliacaoPIA.ppa !== null) {
+                    elPpaVal.style.color = 'var(--accent-green)';
                 }
             }
 
-            // Módulo Pediátrico de Holliday-Segar
+            // Painel de SCA
+            const painelSCA = document.getElementById('painel-sca');
+            const tituloSCA = document.getElementById('sca-titulo');
+            const condutaSCA = document.getElementById('sca-conduta');
+
+            if (painelSCA && avaliacaoPIA.status !== 'nao_aferido') {
+                painelSCA.style.display = 'block';
+                painelSCA.style.background = avaliacaoPIA.isSCA ? 'rgba(155, 44, 44, 0.25)' : 'rgba(255, 255, 255, 0.05)';
+                painelSCA.style.borderLeft = `4px solid ${avaliacaoPIA.cor}`;
+                
+                if (tituloSCA) {
+                    tituloSCA.innerText = `Estratificação PIA: ${avaliacaoPIA.classificacao}`;
+                    tituloSCA.style.color = avaliacaoPIA.cor;
+                }
+                if (condutaSCA) {
+                    condutaSCA.innerHTML = avaliacaoPIA.conduta;
+                }
+            } else if (painelSCA) {
+                painelSCA.style.display = 'none';
+            }
+
+            // Suporte Pediátrico (Holliday-Segar)
             const painelPeds = document.getElementById('painel-pediatrico');
             const resHolliday = document.getElementById('res-holliday');
             if (idadeCalculada < 15) {
@@ -191,10 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 painelPeds.style.display = 'none';
             }
 
-            // Alerta Crítico de Fluid Creep / Síndrome Compartimental
+            // Alerta Fluid Creep
             const painelCreep = document.getElementById('alerta-fluid-creep');
             if (painelCreep) {
-                if (scq >= 50 || volumeTotal24h > (peso * 250)) {
+                if (scq >= 50 || volumeTotal24h > (peso * 250) || avaliacaoPIA.piammHg >= 16) {
                     painelCreep.style.display = 'block';
                 } else {
                     painelCreep.style.display = 'none';
@@ -203,11 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 7. Botão para Copiar a Evolução para o Prontuário Eletrônico
+    // 7. Copiar Evolução Anônima para Prontuário
     if (btnCopiar) {
         btnCopiar.addEventListener('click', () => {
-            const nome = document.getElementById('nome')?.value || 'Não informado';
-            const leito = document.getElementById('leito')?.value || 'S/N';
             const peso = document.getElementById('peso')?.value || '0';
             const scq = document.getElementById('scq-display')?.innerText || '0%';
             const volTotal = document.getElementById('res-vol-total')?.innerText || '0 mL';
@@ -216,34 +242,39 @@ document.addEventListener('DOMContentLoaded', () => {
             const ajusteBomba = document.getElementById('res-ajuste-bomba')?.innerText || '--';
             const balanco = document.getElementById('res-balanco')?.innerText || '0 mL';
             const deltaNa = document.getElementById('res-impacto-na')?.innerText || '--';
+            const piaClass = document.getElementById('res-pia-class')?.innerText || 'Não aferida';
+            const ppaVal = document.getElementById('res-ppa-valor')?.innerText || '--';
 
-            const textoProntuario = `[EVOLUÇÃO PQC - RESPOSTA VOLÊMICA E RESTRUTURAÇÃO HÍDRICA]
-Paciente: ${nome} | Leito: ${leito} | Peso: ${peso}kg
-Superfície Corporal Queimada (SCQ): ${scq}
+            const textoProntuario = `[EVOLUÇÃO PQC - RESSUSCITAÇÃO VOLÊMICA & PARÂMETROS HEMODINÂMICOS/PIA]
+Parâmetros Biofísicos: Peso ${peso} kg | SCQ: ${scq}
 --------------------------------------------------
-- Volume Parkland (24h): ${volTotal}
-- Vazão Teórica de Ataque: ${vazaoAtaque}
-- Diurese Real Aferida: ${diureseAferida}
-- Conduta/Ajuste na Bomba: ${ajusteBomba}
-- Balanço Hídrico (com perdas evaporativas): ${balanco}
-- Impacto Osmolar Projetado (ΔNa⁺): ${deltaNa}
+• Volume Parkland (24h): ${volTotal}
+• Vazão Teórica de Ataque: ${vazaoAtaque}
+• Diurese Real Aferida: ${diureseAferida}
+• Conduta / Ajuste na Bomba: ${ajusteBomba}
+• Balanço Hídrico (com perdas evaporativas): ${balanco}
+• Impacto Osmolar Projetado (ΔNa⁺): ${deltaNa}
 --------------------------------------------------
-Avaliação de Risco: Monitoramento contínuo de sinais de perfusão e compartimentação tecidual.`;
+MONITORIZAÇÃO ABDOMINAL (WSACS):
+• Classificação PIA: ${piaClass}
+• Pressão de Perfusão Abdominal (PPA): ${ppaVal}
+--------------------------------------------------
+Avaliação contínua para prevenção de Fluid Creep e Síndrome Compartimental.`;
 
             navigator.clipboard.writeText(textoProntuario).then(() => {
                 alert('Evolução copiada com sucesso para a área de transferência!');
             }).catch(() => {
-                alert('Erro ao copiar automaticamente. Selecione o texto e copie manualmente.');
+                alert('Erro ao copiar automaticamente.');
             });
         });
     }
 
-    // 8. Registro do Service Worker para suporte Offline (PWA)
+    // 8. Service Worker para suporte Offline (PWA)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
-                .then((reg) => console.log('[PQC-HFA PWA] Service Worker registrado com sucesso:', reg.scope))
-                .catch((err) => console.error('[PQC-HFA PWA] Falha ao registrar Service Worker:', err));
+                .then((reg) => console.log('[PQC-HFA PWA] SW ativo:', reg.scope))
+                .catch((err) => console.error('[PQC-HFA PWA] Falha SW:', err));
         });
     }
 });

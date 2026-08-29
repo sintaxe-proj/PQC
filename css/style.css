@@ -1,18 +1,15 @@
 :root {
-    /* Fundo claro e limpo */
+    /* Fundo claro e verde hospitalar */
     --bg-main: #f4f7f6;
     --card-bg: #ffffff;
-    
-    /* Textos legíveis e profissionais */
     --text-main: #1e293b;
     --text-muted: #64748b;
     --border-color: #cbd5e1;
     
-    /* Cores de Destaque */
-    --accent-red: #dc2626;      /* Mantido para queimaduras e alertas */
-    --accent-amber: #d97706;    /* Avisos */
-    --accent-green: #059669;    /* Verde hospitalar principal */
-    --accent-blue: #0284c7;     /* Azul secundário */
+    --accent-red: #dc2626;
+    --accent-amber: #d97706;
+    --accent-green: #059669;
+    --accent-blue: #0284c7;
 }
 
 * {
@@ -64,9 +61,10 @@ header p {
     margin-top: 4px;
 }
 
+/* Evita estouro nos itens do Grid */
 .grid-layout {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
 }
 
@@ -78,6 +76,8 @@ header p {
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    min-width: 0; /* IMPEDE O ESTOURO DO CONTAINER */
+    overflow: hidden;
 }
 
 .card-title {
@@ -94,27 +94,37 @@ header p {
 
 .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Garante cálculo correto de largura */
     gap: 12px;
+    width: 100%;
 }
 
 .full-width {
-    grid-column: span 2;
+    grid-column: 1 / -1;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    width: 100%;
+    min-width: 0;
 }
 
 label {
     font-size: 0.85rem;
     color: var(--text-muted);
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+/* Corrige o tamanho exato de todos os inputs */
 input, select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     background-color: #ffffff;
     border: 1px solid var(--border-color);
     color: var(--text-main);
@@ -129,13 +139,14 @@ input:focus, select:focus {
     box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 }
 
-/* SVG Mapa Corporal */
+/* Mapa Corporal */
 .svg-container {
     position: relative;
     background-color: #ffffff;
     border-radius: 6px;
     padding: 10px;
     border: 1px solid var(--border-color);
+    width: 100%;
 }
 
 .scq-badge {
@@ -170,16 +181,15 @@ input:focus, select:focus {
 }
 
 .burn-region:hover {
-    fill: #a7f3d0; /* Verde bem claro ao passar o mouse */
+    fill: #a7f3d0;
 }
 
-/* Classe ativada via JS ao selecionar a área */
 .burn-region.selected {
     fill: var(--accent-red) !important;
     opacity: 0.9;
 }
 
-/* Painel de Resultados */
+/* Botões e Resultados */
 .btn-calc {
     background-color: var(--accent-green);
     color: white;
@@ -206,6 +216,7 @@ input:focus, select:focus {
     flex-direction: column;
     gap: 12px;
     border: 1px solid var(--border-color);
+    width: 100%;
 }
 
 .metric-row {

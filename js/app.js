@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof bodyMap.selecionarGrupo === 'function') bodyMap.selecionarGrupo('visao-posterior');
     });
 
-    // Hora do acidente
+    // Hora do acidente (Default para o momento atual caso esteja vazio)
     const inputHoraAcidente = document.getElementById('horaAcidente');
     if (inputHoraAcidente && !inputHoraAcidente.value) {
         const agora = new Date();
@@ -37,33 +37,60 @@ document.addEventListener('DOMContentLoaded', () => {
         inputHoraAcidente.value = agora.toISOString().slice(0, 16);
     }
 
-    // Idade e Lund-Browder
-    let idadeCalculada = 30;
+    /**
+     * Helper para calcular a idade exata com base na data de nascimento
+     */
+    function calcularIdade(dataNascVal) {
+        if (!dataNascVal) return null;
+        const dataNasc = new Date(dataNascVal);
+        if (isNaN(dataNasc.getTime())) return null;
+
+        const hoje = new Date();
+        let idade = hoje.getFullYear() - dataNasc.getFullYear();
+        const m = hoje.getMonth() - dataNasc.getMonth();
+        if (m < 0 || (m === 0 && hoje.getDate() < dataNasc.getDate())) {
+            idade--;
+        }
+        return idade < 0 ? 0 : idade;
+    }
+
+    /**
+     * Atualiza o mapa de Lund-Browder e as labels de faixa etária
+     */
+    function processarMudancaIdade() {
+        if (!inputDataNascimento) return;
+        const idade = calcularIdade(inputDataNascimento.value);
+
+        if (idade === null) return;
+
+        if (typeof bodyMap.atualizarLundBrowder === 'function') {
+            bodyMap.atualizarLundBrowder(idade);
+        }
+
+        if (labelFaixaEtaria) {
+            if (idade < 1) labelFaixaEtaria.innerText = 'Lund-Browder: Lactente (<1 ano)';
+            else if (idade <= 4) labelFaixaEtaria.innerText = `Lund-Browder: Infantil (${idade} anos)`;
+            else if (idade <= 9) labelFaixaEtaria.innerText = `Lund-Browder: Escolar (${idade} anos)`;
+            else if (idade <= 14) labelFaixaEtaria.innerText = `Lund-Browder: Jovem (${idade} anos)`;
+            else labelFaixaEtaria.innerText = 'Lund-Browder: Adulto (15+ anos)';
+        }
+    }
+
+    // Ouvinte e execução inicial caso o campo venha preenchido (ex: autocomplete do browser)
     if (inputDataNascimento) {
-        inputDataNascimento.addEventListener('change', (e) => {
-            const dataNascVal = e.target.value;
-            if (!dataNascVal) return;
+        inputDataNascimento.addEventListener('change', processarMudancaIdade);
+        if (inputDataNascimento.value) processarMudancaIdade();
+    }
 
-            const dataNasc = new Date(dataNascVal);
-            const hoje = new Date();
-            let idade = hoje.getFullYear() - dataNasc.getFullYear();
-            const m = hoje.getMonth() - dataNasc.getMonth();
-            if (m < 0 || (m === 0 && hoje.getDate() < dataNasc.getDate())) idade--;
-
-            idadeCalculada = idade;
-
-            if (typeof bodyMap.atualizarLundBrowder === 'function') {
-                bodyMap.atualizarLundBrowder(idade);
-            }
-
-            if (labelFaixaEtaria) {
-                if (idade < 1) labelFaixaEtaria.innerText = 'Lund-Browder: Lactente (<1 ano)';
-                else if (idade <= 4) labelFaixaEtaria.innerText = `Lund-Browder: Infantil (${idade} anos)`;
-                else if (idade <= 9) labelFaixaEtaria.innerText = `Lund-Browder: Escolar (${idade} anos)`;
-                else if (idade <= 14) labelFaixaEtaria.innerText = `Lund-Browder: Jovem (${idade} anos)`;
-                else labelFaixaEtaria.innerText = 'Lund-Browder: Adulto (15+ anos)';
-            }
-        });
+    /**
+     * Helper sanitizador para extração da SCQ a partir do DOM
+     */
+    function obterSCQ() {
+        const scqElement = document.getElementById('scq-display');
+        if (!scqElement) return 0;
+        const texto = scqElement.innerText || '0';
+        const sanitizado = texto.replace(/[^\d.,]/g, '').replace(',', '.');
+        return parseFloat(sanitizado) || 0;
     }
 
     // Evento de Cálculo
@@ -79,14 +106,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const tipoAcidente = document.getElementById('tipoAcidente')?.value || 'direto';
             const faseRessuscitacao = document.getElementById('faseRessuscitacao')?.value || 'fase1';
             const horaAcidenteVal = document.getElementById('horaAcidente')?.value;
-            const scq = parseFloat(document.getElementById('scq-display')?.innerText) || 0;
+            const scq = obterSCQ();
+
+            // Resolução da Idade dinâmica no momento do cálculo (Default: 30 anos se não informado)
+            const idadeCalculada = calcularIdade(inputDataNascimento?.value) ?? 30;
 
             if (scq === 0) {
                 alert('Por favor, selecione ao menos uma região do corpo afetada no mapa.');
                 return;
             }
 
-            // Parkland
+            // Parkland (Diretrizes: 4 mL para elétrico/inflamável; 2 mL para queimadura térmica padrão)
             const fatoresElevados = ['inflamavel', 'eletrico'];
             const fatorParkland = fatoresElevados.includes(tipoAcidente) ? 4 : 2;
             const volumeTotal24h = fatorParkland * peso * scq;
@@ -173,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 painelFisio.style.display = 'none';
             }
 
-            // Painel Álbumina
+            // Painel Albumina
             const painelAlbumina = document.getElementById('painel-albumina');
             const msgAlbumina = document.getElementById('albumina-msg');
 
@@ -216,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 painelSCA.style.display = 'none';
             }
 
-            // Pediátrico
+            // Pediátrico (Holliday-Segar para menores de 15 anos)
             const painelPeds = document.getElementById('painel-pediatrico');
             const resHolliday = document.getElementById('res-holliday');
             if (idadeCalculada < 15) {
@@ -232,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fluid Creep
             const painelCreep = document.getElementById('alerta-fluid-creep');
             if (painelCreep) {
-                if (scq >= 50 || volumeTotal24h > (peso * 250) || avaliacaoPIA.piammHg >= 16) {
+                if (scq >= 50 || volumeTotal24h > (peso * 250) || (avaliacaoPIA.piammHg && avaliacaoPIA.piammHg >= 16)) {
                     painelCreep.style.display = 'block';
                 } else {
                     painelCreep.style.display = 'none';
@@ -246,7 +276,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCopiar.addEventListener('click', () => {
             const peso = document.getElementById('peso')?.value || '0';
             const scq = document.getElementById('scq-display')?.innerText || '0%';
-            const fase = document.getElementById('faseRessuscitacao')?.value === 'fase2' ? 'Fase 2 (12-24h)' : 'Fase 1 (0-12h)';
+
+            // Mapeamento dinâmico e seguro da fase de ressuscitacao
+            const elFase = document.getElementById('faseRessuscitacao');
+            const faseMap = {
+                'fase1': 'Fase 1 (0-12h)',
+                'fase2': 'Fase 2 (12-24h)',
+                'manutencao': 'Fase de Manutenção / Estabilização (>24h)'
+            };
+            const fase = faseMap[elFase?.value] || elFase?.options[elFase.selectedIndex]?.text || 'Fase não especificada';
+
             const volTotal = document.getElementById('res-vol-total')?.innerText || '0 mL';
             const vazaoAtaque = document.getElementById('res-vazao-ataque')?.innerText || '0 mL/h';
             const diureseAferida = document.getElementById('res-diurese-kgh')?.innerText || '--';
@@ -287,6 +326,7 @@ Avaliação contínua para prevenção de Fluid Creep, SCA e transição para co
         });
     }
 
+    // Registro do Service Worker (PWA)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')

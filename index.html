@@ -13,43 +13,22 @@
     <meta name="apple-mobile-web-app-title" content="PQC HFA">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-    <link rel="stylesheet" href="css/style.css?v=2.3">
+    <link rel="stylesheet" href="css/style.css?v=2.4">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>PQC - Percentual de Queima Corporal <span class="badge-hfa">HFA</span></h1>
-            <p>Calculadora Clínica de Ressuscitação Volêmica, Balanço Hídrico Avançado e Suporte Pediátrico</p>
+            <p>Calculadora Clínica de Ressuscitação Volêmica, Balanço Hídrico Avançado e Monitorização de PIA/SCA</p>
         </header>
 
         <form id="pqc-form" onsubmit="event.preventDefault();">
             <div class="grid-layout">
-                <!-- 1. DADOS ADMISSIONAIS -->
+                
+                <!-- 1. DADOS CLÍNICOS ADMISSIONAIS (SEM DADOS PESSOAIS) -->
                 <div class="card">
-                    <div class="card-title">1. Dados Admissionais & Etiologia</div>
+                    <div class="card-title">1. Dados Biofísicos & Etiologia</div>
                     <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label for="nome">Nome do Paciente</label>
-                            <input type="text" id="nome" placeholder="Nome completo" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="leito">Leito</label>
-                            <input type="text" id="leito" placeholder="Ex: L-04" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="enfermaria">Enfermaria / Setor</label>
-                            <select id="enfermaria" required>
-                                <option value="">Selecione...</option>
-                                <option value="Clínica">Clínica</option>
-                                <option value="Cirúrgica">Cirúrgica</option>
-                                <option value="Plástica">Plástica</option>
-                                <option value="CTI Adulto">CTI Adulto</option>
-                                <option value="CTI Pediátrico">CTI Pediátrico</option>
-                            </select>
-                        </div>
-
                         <div class="form-group">
                             <label for="dataNascimento">Data de Nascimento</label>
                             <input type="date" id="dataNascimento" required>
@@ -65,7 +44,7 @@
                             <input type="number" id="altura" min="30" max="230" placeholder="Ex: 170">
                         </div>
 
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label for="tipoAcidente">Tipo de Acidente</label>
                             <select id="tipoAcidente" required>
                                 <option value="direto">Direto / Térmico Convencional (2 mL)</option>
@@ -183,11 +162,43 @@
                     </div>
                 </div>
 
-                <!-- 4. PAINEL DE RESULTADOS E AÇÕES DE PRONTUÁRIO -->
+                <!-- 4. MONITORIZAÇÃO DE PIA & RISCO DE SCA (NOVO) -->
                 <div class="card">
-                    <div class="card-title">4. Plano de Infusão & Conduta Clínica</div>
+                    <div class="card-title">4. Pressão Intra-Abdominal (PIA) & SCA</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="piaValor">PIA Aferida</label>
+                            <input type="number" id="piaValor" step="0.1" placeholder="Ex: 14">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="piaUnidade">Unidade de Medida</label>
+                            <select id="piaUnidade">
+                                <option value="mmHg" selected>mmHg</option>
+                                <option value="cmH2O">cmH₂O</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="pam">Pressão Arterial Média - PAM (mmHg)</label>
+                            <input type="number" id="pam" placeholder="Ex: 75 (Opcional para PPA)">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="disfuncaoOrgao">Sinais de Disfunção de Órgãos de Novo?</label>
+                            <select id="disfuncaoOrgao">
+                                <option value="nao" selected>Não / Ausente</option>
+                                <option value="sim">Sim (Oligúria persistente, hipóxia/queda de complacência, acidose, hipotensão)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. PAINEL DE RESULTADOS E AÇÕES DE PRONTUÁRIO -->
+                <div class="card">
+                    <div class="card-title">5. Plano de Infusão & Conduta Clínica</div>
                     
-                    <button class="btn-calc" type="button" id="btn-calcular">Calcular Parâmetros & Ajustes</button>
+                    <button class="btn-calc" type="button" id="btn-calcular">Calcular Parâmetros & Estratificar Riscos</button>
 
                     <div class="results-box" style="margin-top: 15px;">
                         <div class="metric-row">
@@ -223,6 +234,22 @@
                             <span class="metric-value" id="res-impacto-na">--</span>
                         </div>
 
+                        <!-- RESULTADOS PIA E PPA -->
+                        <div class="metric-row" style="border-top: 1px dashed rgba(255,255,255,0.2); margin-top: 8px; padding-top: 8px;">
+                            <span>Classificação da PIA:</span>
+                            <span class="metric-value" id="res-pia-class" style="font-weight: bold;">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Pressão Perfusão Abdominal (PPA):</span>
+                            <span class="metric-value" id="res-ppa-valor">--</span>
+                        </div>
+
+                        <!-- PAINEL DE ESTRATIFICAÇÃO DE SCA -->
+                        <div id="painel-sca" style="display: none; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                            <strong id="sca-titulo"></strong>
+                            <p id="sca-conduta" style="font-size: 0.82rem; margin-top: 4px; line-height: 1.35;"></p>
+                        </div>
+
                         <!-- PAINEL DE AVISO PEDIÁTRICO (HOLLIDAY-SEGAR) -->
                         <div id="painel-pediatrico" style="display: none; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3B82F6; padding: 10px; margin-top: 10px; border-radius: 4px;">
                             <strong style="color: #60A5FA;">Suporte Pediátrico (Holliday-Segar):</strong>
@@ -233,7 +260,7 @@
                         <div id="alerta-fluid-creep" style="display: none; background: rgba(239, 68, 68, 0.15); border-left: 4px solid #EF4444; padding: 10px; margin-top: 10px; border-radius: 4px;">
                             <strong style="color: #FCA5A5;">⚠️ Alerta Crítico de Super-Ressuscitação (Fluid Creep):</strong>
                             <p style="font-size: 0.8rem; margin-top: 4px; color: #FEE2E2;">
-                                SCQ elevado (>50%) ou aporte volêmico excessivo. Risco alto de **Síndrome Compartimental** (Abdominal e de Extremidades), edema pulmonar e glaucoma secundário. Monitore PIA e pulso distal.
+                                SCQ elevada (>50%) ou aporte volêmico excessivo. Risco iminente de **Síndrome Compartimental Abdominal e de Extremidades**.
                             </p>
                         </div>
                     </div>

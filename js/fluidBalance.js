@@ -1,35 +1,50 @@
 /**
- * FluidBalance.js - Balanço Hídrico e Cálculo de Osmolaridade
+ * FluidBalance.js - Balanço Hídrico e Cálculo de Osmolaridade / Tonicidade
  */
 export class FluidBalance {
     constructor() {}
 
     /**
-     * Realiza o cálculo do Balanço Hídrico
+     * Realiza o cálculo do Balanço Hídrico Volumétrico e Projeção de Sódio
      */
-    calculate({ entradas = 0, diurese = 0, emese = 0, compressas = 0, outrasPerdas = 0 }) {
-        const ent = parseFloat(entradas) || 0;
+    calculate({ entradas = 0, diurese = 0, emese = 0, compressas = 0, outrasPerdas = 0, peso = 70, naSerico = 140, naInfusao = 130, volumeParklandML = 0 }) {
+        const entInsumos = parseFloat(entradas) || 0;
         const diur = parseFloat(diurese) || 0;
         const eme = parseFloat(emese) || 0;
-        
-        // Conversão: cada compressa operatória/queimadura embebida calcula ~300mL
-        const comp = (parseFloat(compressas) || 0) * 300; 
+        const comp = (parseFloat(compressas) || 0) * 300; // 300 mL por compressa
         const out = parseFloat(outrasPerdas) || 0;
 
+        // Entradas Totais = Outras Entradas + Volume de Parkland Calculado
+        const totalEntradas = entInsumos + parseFloat(volumeParklandML || 0);
         const totalSaidas = diur + eme + comp + out;
-        const balancoFinal = ent - totalSaidas;
+        const balancoFinal = totalEntradas - totalSaidas;
+
+        // Parâmetros para Fórmula de Adrogué-Madias (Tonicidade)
+        const p = parseFloat(peso) || 70;
+        const naS = parseFloat(naSerico) || 140;
+        const naI = parseFloat(naInfusao) || 130;
+
+        // Água Corporal Total (ACT) estimada: ~60% do peso em adultos
+        const act = p * 0.6;
+
+        // Variação de Na+ por 1 Litro de infusão infundido
+        const deltaNaPorLitro = (naI - naS) / (act + 1);
+
+        // Variação total estimada de Na+ com base no volume total infundido em 24h
+        const variacaoNaEstimada = deltaNaPorLitro * (totalEntradas / 1000);
 
         return {
-            totalEntradas: ent,
-            totalSaidas: totalSaidas,
-            balancoFinal: balancoFinal,
-            perdaCompressasML: comp
+            totalEntradas,
+            totalSaidas,
+            balancoFinal,
+            perdaCompressasML: comp,
+            variacaoNaEstimada: parseFloat(variacaoNaEstimada.toFixed(2)),
+            naSericoProjetado: parseFloat((naS + variacaoNaEstimada).toFixed(1))
         };
     }
 
     /**
      * Calcula a Osmolalidade Sérica Estimada (mOsm/kg)
-     * Fórmula: 2 * Na + (Glicemia / 18) + (Ureia / 6)
      */
     calculateOsmolality(sodio, glicemia, ureia) {
         const na = parseFloat(sodio) || 0;

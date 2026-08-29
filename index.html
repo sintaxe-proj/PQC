@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PQC - Percentual de Queima Corporal (HFA)</title>
     
-    <!-- Configurações PWA e Suporte Offline -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2B6CB0">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,21 +12,21 @@
     <meta name="apple-mobile-web-app-title" content="PQC HFA">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-    <link rel="stylesheet" href="css/style.css?v=2.4">
+    <link rel="stylesheet" href="css/style.css?v=2.5">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>PQC - Percentual de Queima Corporal <span class="badge-hfa">HFA</span></h1>
-            <p>Calculadora Clínica de Ressuscitação Volêmica, Balanço Hídrico Avançado e Monitorização de PIA/SCA</p>
+            <p>Calculadora Clínica de Ressuscitação Volêmica, Balanço Hídrico, Perfusão & Protocolo de Coloides</p>
         </header>
 
         <form id="pqc-form" onsubmit="event.preventDefault();">
             <div class="grid-layout">
                 
-                <!-- 1. DADOS CLÍNICOS ADMISSIONAIS (SEM DADOS PESSOAIS) -->
+                <!-- 1. DADOS CLÍNICOS E FASE DE RESSUSCITAÇÃO -->
                 <div class="card">
-                    <div class="card-title">1. Dados Biofísicos & Etiologia</div>
+                    <div class="card-title">1. Dados Biofísicos & Fase de Ressuscitação</div>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="dataNascimento">Data de Nascimento</label>
@@ -45,6 +44,14 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="faseRessuscitacao">Fase de Ressuscitação</label>
+                            <select id="faseRessuscitacao" style="font-weight: bold; color: var(--accent-amber);">
+                                <option value="fase1" selected>Fase 1: Primeras 0 a 12 horas (Cristaloides)</option>
+                                <option value="fase2">Fase 2: 12 a 24 horas (Transição / Coloides)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label for="tipoAcidente">Tipo de Acidente</label>
                             <select id="tipoAcidente" required>
                                 <option value="direto">Direto / Térmico Convencional (2 mL)</option>
@@ -54,14 +61,14 @@
                             </select>
                         </div>
 
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label for="horaAcidente">Data/Hora do Acidente</label>
                             <input type="datetime-local" id="horaAcidente" required>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. MAPA CORPORAL VETORIAL (SVG) COM RESETS RÁPIDOS -->
+                <!-- 2. MAPA CORPORAL VETORIAL (SVG) -->
                 <div class="card">
                     <div class="card-title">
                         <span>2. Mapeamento Corporal (SCQ)</span>
@@ -162,39 +169,49 @@
                     </div>
                 </div>
 
-                <!-- 4. MONITORIZAÇÃO DE PIA & RISCO DE SCA (NOVO) -->
+                <!-- 4. PERFUSÃO TECIDUAL & MONITORIZAÇÃO DE PIA (AJUSTE FINO) -->
                 <div class="card">
-                    <div class="card-title">4. Pressão Intra-Abdominal (PIA) & SCA</div>
+                    <div class="card-title">4. Perfusão Tecidual & Pressão Intra-Abdominal</div>
                     <div class="form-grid">
+                        <div class="form-group">
+                            <label for="lactato">Lactato Sérico (mmol/L)</label>
+                            <input type="number" id="lactato" step="0.1" placeholder="Ex: 1.5 (Opcional)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="svco2">Saturação Venosa Central - SvcO₂ (%)</label>
+                            <input type="number" id="svco2" step="1" placeholder="Ex: 72 (Opcional)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pam">PAM (mmHg)</label>
+                            <input type="number" id="pam" placeholder="Ex: 75">
+                        </div>
+
                         <div class="form-group">
                             <label for="piaValor">PIA Aferida</label>
                             <input type="number" id="piaValor" step="0.1" placeholder="Ex: 14">
                         </div>
 
                         <div class="form-group">
-                            <label for="piaUnidade">Unidade de Medida</label>
+                            <label for="piaUnidade">Unidade PIA</label>
                             <select id="piaUnidade">
                                 <option value="mmHg" selected>mmHg</option>
                                 <option value="cmH2O">cmH₂O</option>
                             </select>
                         </div>
 
-                        <div class="form-group full-width">
-                            <label for="pam">Pressão Arterial Média - PAM (mmHg)</label>
-                            <input type="number" id="pam" placeholder="Ex: 75 (Opcional para PPA)">
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label for="disfuncaoOrgao">Sinais de Disfunção de Órgãos de Novo?</label>
+                        <div class="form-group">
+                            <label for="disfuncaoOrgao">Disfunção Orgânica de Novo?</label>
                             <select id="disfuncaoOrgao">
                                 <option value="nao" selected>Não / Ausente</option>
-                                <option value="sim">Sim (Oligúria persistente, hipóxia/queda de complacência, acidose, hipotensão)</option>
+                                <option value="sim">Sim (Oligúria, hipóxia, acidose)</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                <!-- 5. PAINEL DE RESULTADOS E AÇÕES DE PRONTUÁRIO -->
+                <!-- 5. PAINEL DE RESULTADOS E CONDUTAS AVANÇADAS -->
                 <div class="card">
                     <div class="card-title">5. Plano de Infusão & Conduta Clínica</div>
                     
@@ -244,6 +261,18 @@
                             <span class="metric-value" id="res-ppa-valor">--</span>
                         </div>
 
+                        <!-- ALERTA FISIOLÓGICO DE PERFUSÃO (LACTATO X DIURESE) -->
+                        <div id="painel-alerta-fisiologico" style="display: none; background: rgba(245, 158, 11, 0.15); border-left: 4px solid #F59E0B; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                            <strong style="color: #FBBF24;" id="alerta-fisio-titulo"></strong>
+                            <p style="font-size: 0.82rem; margin-top: 4px; color: #FEF3C7; line-height: 1.35;" id="alerta-fisio-msg"></p>
+                        </div>
+
+                        <!-- PAINEL DE PROTOCOLO DE ÁLBUMINA (FASE 2: 12-24h) -->
+                        <div id="painel-albumina" style="display: none; background: rgba(16, 185, 129, 0.12); border-left: 4px solid #10B981; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                            <strong style="color: #34D399;"> Protocolo de Coloides (Álbumina 20%):</strong>
+                            <p style="font-size: 0.82rem; margin-top: 4px; color: #D1FAE5; line-height: 1.35;" id="albumina-msg"></p>
+                        </div>
+
                         <!-- PAINEL DE ESTRATIFICAÇÃO DE SCA -->
                         <div id="painel-sca" style="display: none; padding: 10px; margin-top: 10px; border-radius: 4px;">
                             <strong id="sca-titulo"></strong>
@@ -265,7 +294,7 @@
                         </div>
                     </div>
 
-                    <button class="btn-calc" type="button" id="btn-copiar-prontuario" style="margin-top: 15px; background: #2B6CB0;">Copiar Evolução para Prontuário</button>
+                    <button class="btn-calc" type="button" id="btn-copiar-prontuario" style="margin-top: 15px; background: #2B6CB0;">Copiar Evolução Anônima para Prontuário</button>
                 </div>
             </div>
         </form>

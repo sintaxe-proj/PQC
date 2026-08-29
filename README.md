@@ -2,16 +2,19 @@
 
 # PQC - Percentual de Queima Corporal (HFA) 🩺🔥
 
-O **PQC-HFA** é uma solução web interativa desenvolvida para auxílio no cálculo de superfície corporal queimada (SCQ), prescrição de ressuscitação volêmica (Fórmula de Parkland ajustada) e cálculo de balanço hídrico para pacientes vítimas de queimaduras.
+O PQC-HFA é uma solução web interativa desenvolvida para o auxílio ao raciocínio clínico, mapeamento visual de lesões e suporte à decisão na Terapia Intensiva e Emergência de Centros de Tratamento de Queimados (CTQ). O sistema realiza o cálculo de Superfície Corporal Queimada (SCQ), prescrição da ressuscitação volêmica pela Fórmula de Parkland e monitoramento contínuo de balanço hídrico.
 
 ---
 
 ## 🎯 Objetivos do Projeto
 
-- **Precisão Diagnóstica:** Mapeamento vetorial (SVG) da área corporal para cálculo automático de SCQ (Regra dos Noves).
-- **Ressuscitação Volêmica Direcionada:** Prescrição automatizada da Fórmula de Parkland ajustada conforme a etiologia da lesão.
-- **Cronograma de Infusão Ajustado:** Cálculo dinâmico das fases de infusão (Ataque x Manutenção) considerando o **horário real do acidente**.
-- **Gestão de Balanço Hídrico:** Correção de vazão e monitoramento de perdas corporais (incluindo quantificação de perda sanguínea por compressas cirúrgicas).
+Precisão Diagnóstica Integrada: Mapeamento vetorial interativo (SVG) com atribuição exata de percentual corporal (Regra dos Nove de Wallace e adaptações anatômicas).
+
+Ressuscitação Volêmica Personalizada: Cálculo automatizado da Fórmula de Parkland ajustado conforme a etiologia da queimadura (térmica, química ou elétrica).
+
+Cronograma Dinâmico de Infusão: Reajuste da taxa de infusão em bomba de amostragem/infusão contínua (mL/h) considerando a janela real de tempo decorrido desde o momento do acidente (time-to-admission).
+
+Gestão de Balanço Hídrico & Perdas Complexas: Monitoramento rigoroso do volume acumulado, diurese e estimativa de perda sanguínea em procedimentos/curativos cirúrgicos.
 
 ---
 
@@ -36,13 +39,13 @@ $$\text{Balanço Hídrico} = \text{Total Entradas} - \text{Total Saídas}$$
 
 ```text
 pqc-hfa/
-├── index.html            # Interface principal e formulário
+├── index.html            # Interface principal, dashboard e formulário clínico
 ├── css/
-│   └── styles.css        # Estilos e design system
+│   └── styles.css        # Design System (tokens visuais e responsividade)
 ├── js/
-│   ├── app.js            # Controladora principal e eventos do formulário
-│   ├── burnCalculator.js # Motor de cálculos de Parkland e Infusão
-│   ├── fluidBalance.js   # Módulo de cálculo de perdas e balanço hídrico
-│   └── svgInteractive.js # Mapeamento interativo do corpo humano (SVG)
+│   ├── app.js            # Controller principal e orquestração de eventos
+│   ├── burnCalculator.js # Motor de cálculos de Parkland, SCQ e metas de mL/h
+│   ├── fluidBalance.js   # Módulo de gestão de perdas, diurese e balanço
+│   └── svgInteractive.js # Gerenciador do mapa anátomo-vetorial (SVG)
 └── assets/
-    └── body-map.svg      # Mapa anátomo-vetorial com data-attributes de SCQ
+    └── body-map.svg      # Vetor corporal anatômico com data-attributes de SCQ

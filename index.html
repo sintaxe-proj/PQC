@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PQC - Percentual de Queima Corporal (HFA)</title>
-    <!-- CSS Externo com parâmetro de versão para bypass de cache -->
-    <link rel="stylesheet" href="css/style.css?v=2.2">
+    <link rel="stylesheet" href="css/style.css?v=2.3">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>PQC - Percentual de Queima Corporal <span class="badge-hfa">HFA</span></h1>
-            <p>Calculadora Clínica de Ressuscitação Volêmica (Fórmula de Parkland) e Ajuste de Balanço Hídrico</p>
+            <p>Calculadora Clínica de Ressuscitação Volêmica, Balanço Hídrico Avançado e Suporte Pediátrico</p>
         </header>
 
         <form id="pqc-form" onsubmit="event.preventDefault();">
@@ -34,15 +33,14 @@
                             <label for="enfermaria">Enfermaria / Setor</label>
                             <select id="enfermaria" required>
                                 <option value="">Selecione...</option>
-                                <option value="Clinica">Clínica</option>
-                                <option value="Cirurgica">Cirúrgica</option>
-                                <option value="Plastica">Plástica</option>
+                                <option value="Clínica">Clínica</option>
+                                <option value="Cirúrgica">Cirúrgica</option>
+                                <option value="Plástica">Plástica</option>
                                 <option value="CTI Adulto">CTI Adulto</option>
                                 <option value="CTI Pediátrico">CTI Pediátrico</option>
                             </select>
                         </div>
 
-                        <!-- Campo para ajuste automático do Lund-Browder -->
                         <div class="form-group">
                             <label for="dataNascimento">Data de Nascimento</label>
                             <input type="date" id="dataNascimento" required>
@@ -51,6 +49,11 @@
                         <div class="form-group">
                             <label for="peso">Peso Estimado (kg)</label>
                             <input type="number" id="peso" step="0.1" min="1" placeholder="Ex: 70" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="altura">Altura (cm)</label>
+                            <input type="number" id="altura" min="30" max="230" placeholder="Ex: 170">
                         </div>
 
                         <div class="form-group full-width">
@@ -70,54 +73,49 @@
                     </div>
                 </div>
 
-                <!-- 2. MAPA CORPORAL VETORIAL (SVG) -->
+                <!-- 2. MAPA CORPORAL VETORIAL (SVG) COM RESETS RÁPIDOS -->
                 <div class="card">
                     <div class="card-title">
                         <span>2. Mapeamento Corporal (SCQ)</span>
                         <span id="faixa-etaria-label" style="font-size: 0.8rem; color: var(--accent-green); font-weight: bold;">Adulto (15+ anos)</span>
                     </div>
 
+                    <div style="margin-bottom: 8px; display: flex; gap: 8px;">
+                        <button type="button" id="btn-reset-mapa" style="background: #4A5568; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Limpar Mapa</button>
+                        <button type="button" id="btn-select-frente" style="background: #4A5568; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Toda Frente</button>
+                        <button type="button" id="btn-select-verso" style="background: #4A5568; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Todo Verso</button>
+                    </div>
+
                     <div class="svg-container">
                         <div class="scq-badge">SCQ: <span id="scq-display">0.0%</span></div>
                         
                         <svg id="body-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 360" width="100%" height="100%">
-                          <!-- Visão Anterior -->
                           <g id="visao-anterior">
                             <text x="100" y="20" text-anchor="middle" class="text-label">ANTERIOR</text>
                             <path id="cabeca_ant" class="burn-region" data-porcentagem="4.5" d="M85 30 C85 30 100 20 115 30 C120 45 115 65 115 65 L85 65 Z" />
                             <path id="torax_ant" class="burn-region" data-porcentagem="9.0" d="M70 70 L130 70 L125 125 L75 125 Z" />
                             <path id="abdomen_ant" class="burn-region" data-porcentagem="9.0" d="M75 127 L125 127 L120 180 L80 180 Z" />
                             <path id="genitalia" class="burn-region" data-porcentagem="1.0" d="M92 181 L108 181 L104 195 L96 195 Z" />
-                            
                             <path id="braco_dir_ant" class="burn-region" data-porcentagem="2.25" d="M52 73 L67 71 L63 120 L50 120 Z" />
                             <path id="antebra_mao_dir_ant" class="burn-region" data-porcentagem="2.25" d="M50 122 L63 122 L58 180 L43 180 Z" />
-
                             <path id="braco_esq_ant" class="burn-region" data-porcentagem="2.25" d="M133 71 L148 73 L150 120 L137 120 Z" />
                             <path id="antebra_mao_esq_ant" class="burn-region" data-porcentagem="2.25" d="M137 122 L150 122 L157 180 L142 180 Z" />
-
                             <path id="coxa_dir_ant" class="burn-region" data-porcentagem="4.5" d="M78 182 L94 182 L91 255 L73 255 Z" />
                             <path id="perna_pe_dir_ant" class="burn-region" data-porcentagem="4.5" d="M73 257 L91 257 L87 335 L67 335 Z" />
-
                             <path id="coxa_esq_ant" class="burn-region" data-porcentagem="4.5" d="M106 182 L122 182 L127 255 L109 255 Z" />
                             <path id="perna_pe_esq_ant" class="burn-region" data-porcentagem="4.5" d="M109 257 L127 257 L133 335 L113 335 Z" />
                           </g>
-
-                          <!-- Visão Posterior -->
                           <g id="visao-posterior">
                             <text x="300" y="20" text-anchor="middle" class="text-label">POSTERIOR</text>
                             <path id="cabeca_post" class="burn-region" data-porcentagem="4.5" d="M285 30 C285 30 300 20 315 30 C320 45 315 65 315 65 L285 65 Z" />
                             <path id="dorso_sup_post" class="burn-region" data-porcentagem="9.0" d="M270 70 L330 70 L325 125 L275 125 Z" />
                             <path id="dorso_inf_post" class="burn-region" data-porcentagem="9.0" d="M275 127 L325 127 L322 190 L278 190 Z" />
-
                             <path id="braco_dir_post" class="burn-region" data-porcentagem="2.25" d="M252 73 L267 71 L263 120 L250 120 Z" />
                             <path id="antebra_mao_dir_post" class="burn-region" data-porcentagem="2.25" d="M250 122 L263 122 L258 180 L243 180 Z" />
-
                             <path id="braco_esq_post" class="burn-region" data-porcentagem="2.25" d="M333 71 L348 73 L350 120 L337 120 Z" />
                             <path id="antebra_mao_esq_post" class="burn-region" data-porcentagem="2.25" d="M337 122 L350 122 L357 180 L342 180 Z" />
-
                             <path id="coxa_dir_post" class="burn-region" data-porcentagem="4.5" d="M277 192 L296 192 L291 255 L273 255 Z" />
                             <path id="perna_pe_dir_post" class="burn-region" data-porcentagem="4.5" d="M273 257 L291 257 L287 335 L267 335 Z" />
-
                             <path id="coxa_esq_post" class="burn-region" data-porcentagem="4.5" d="M304 192 L323 192 L327 255 L309 255 Z" />
                             <path id="perna_pe_esq_post" class="burn-region" data-porcentagem="4.5" d="M309 257 L327 257 L333 335 L313 335 Z" />
                           </g>
@@ -125,9 +123,9 @@
                     </div>
                 </div>
 
-                <!-- 3. BALANÇO HÍDRICO & TONICIDADE -->
+                <!-- 3. BALANÇO HÍDRICO & DIURESE REAL -->
                 <div class="card">
-                    <div class="card-title">3. Balanço Hídrico & Tonicidade</div>
+                    <div class="card-title">3. Balanço Hídrico & Resposta Renal</div>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="entradas">Outras Entradas (mL)</label>
@@ -135,8 +133,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="diurese">Diurese (mL)</label>
+                            <label for="diurese">Diurese Recente (mL)</label>
                             <input type="number" id="diurese" placeholder="Volume urinário">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="horasDiurese">Período Aferido (Horas)</label>
+                            <input type="number" id="horasDiurese" placeholder="Ex: 1 ou 4h" value="1">
                         </div>
 
                         <div class="form-group">
@@ -145,17 +148,16 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="compressas">Compressas de Sangue (Qtd)</label>
+                            <label for="compressas">Compressas (Qtd)</label>
                             <input type="number" id="compressas" placeholder="300 mL cada">
                         </div>
 
-                        <!-- Parâmetros da Infusão / Tonicidade -->
                         <div class="form-group">
                             <label for="naSerico">Sódio Sérico [Na⁺] (mEq/L)</label>
-                            <input type="number" id="naSerico" step="0.1" placeholder="Ex: 140" value="140">
+                            <input type="number" id="naSerico" step="0.1" value="140">
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group full-width">
                             <label for="naInfusao">Cristalóide de Ressuscitação</label>
                             <select id="naInfusao">
                                 <option value="130" selected>Ringer Lactato (130 mEq/L Na⁺)</option>
@@ -172,48 +174,67 @@
                     </div>
                 </div>
 
-                <!-- 4. PAINEL DE RESULTADOS -->
+                <!-- 4. PAINEL DE RESULTADOS E AÇÕES DE PRONTUÁRIO -->
                 <div class="card">
-                    <div class="card-title">4. Plano de Infusão Calculado</div>
+                    <div class="card-title">4. Plano de Infusão & Conduta Clínica</div>
                     
-                    <button class="btn-calc" type="button" id="btn-calcular">Calcular Parâmetros de Infusão</button>
+                    <button class="btn-calc" type="button" id="btn-calcular">Calcular Parâmetros & Ajustes</button>
 
-                    <div class="results-box">
+                    <div class="results-box" style="margin-top: 15px;">
                         <div class="metric-row">
-                            <span>Fator de Parkland Aplicado:</span>
+                            <span>Fator de Parkland:</span>
                             <span class="metric-value" id="res-fator">--</span>
                         </div>
                         <div class="metric-row">
-                            <span>Volume Total 24h:</span>
+                            <span>Volume Parkland 24h:</span>
                             <span class="metric-value" id="res-vol-total">0 mL</span>
                         </div>
                         <div class="metric-row">
-                            <span>Fase de Ataque (Primeiras 8h):</span>
-                            <span class="metric-value" id="res-vol-ataque">0 mL</span>
-                        </div>
-                        <div class="metric-row">
-                            <span>Vazão Sugerida da Bomba (Ataque):</span>
+                            <span>Vazão Teórica de Ataque:</span>
                             <span class="metric-value" style="color: var(--accent-amber);" id="res-vazao-ataque">0 mL/h</span>
                         </div>
                         <div class="metric-row">
-                            <span>Fase de Manutenção (16h seguintes):</span>
-                            <span class="metric-value" id="res-vol-manutencao">0 mL</span>
+                            <span>Diurese Real Aferida:</span>
+                            <span class="metric-value" id="res-diurese-kgh">0 mL/kg/h</span>
                         </div>
                         <div class="metric-row">
-                            <span>Balanço Hídrico Acumulado:</span>
-                            <span class="metric-value" style="color: var(--accent-red);" id="res-balanco">0 mL</span>
+                            <span>Ajuste Recomendado na Bomba:</span>
+                            <span class="metric-value" id="res-ajuste-bomba" style="font-weight: bold;">--</span>
                         </div>
                         <div class="metric-row">
-                            <span>Impacto Osmolar Projetado (ΔNa⁺):</span>
-                            <span class="metric-value" style="color: var(--text-main);" id="res-impacto-na">--</span>
+                            <span>Perda Evaporativa Est. (24h):</span>
+                            <span class="metric-value" id="res-perda-evaporativa">0 mL</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Balanço Hídrico Corrigido:</span>
+                            <span class="metric-value" id="res-balanco">0 mL</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Impacto Osmolar (ΔNa⁺):</span>
+                            <span class="metric-value" id="res-impacto-na">--</span>
+                        </div>
+
+                        <!-- PAINEL DE AVISO PEDIÁTRICO (HOLLIDAY-SEGAR) -->
+                        <div id="painel-pediatrico" style="display: none; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3B82F6; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                            <strong style="color: #60A5FA;">Suporte Pediátrico (Holliday-Segar):</strong>
+                            <p id="res-holliday" style="font-size: 0.85rem; margin-top: 4px; color: #E2E8F0;"></p>
+                        </div>
+
+                        <!-- ALERTA DE FLUID CREEP -->
+                        <div id="alerta-fluid-creep" style="display: none; background: rgba(239, 68, 68, 0.15); border-left: 4px solid #EF4444; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                            <strong style="color: #FCA5A5;">⚠️ Alerta Crítico de Super-Ressuscitação (Fluid Creep):</strong>
+                            <p style="font-size: 0.8rem; margin-top: 4px; color: #FEE2E2;">
+                                SCQ elevado (>50%) ou aporte volêmico excessivo. Risco alto de **Síndrome Compartimental** (Abdominal e de Extremidades), edema pulmonar e glaucoma secundário. Monitore PIA e pulso distal.
+                            </p>
                         </div>
                     </div>
+
+                    <button class="btn-calc" type="button" id="btn-copiar-prontuario" style="margin-top: 15px; background: #2B6CB0;">Copiar Evolução para Prontuário</button>
                 </div>
             </div>
         </form>
     </div>
 
-    <!-- Módulo JS principal -->
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

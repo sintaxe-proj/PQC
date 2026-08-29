@@ -1,72 +1,40 @@
-// js/SVGInteractive.js
-// Módulo para interação vetorial e mapeamento de Superfície Corporal Queimada (SCQ)
-
 export class SVGInteractive {
-    constructor(svgElementId, scqDisplayId) {
-        this.svgElement = document.getElementById(svgElementId);
-        this.scqDisplay = document.getElementById(scqDisplayId);
-        this.totalSCQ = 0;
+    // ... constructor e código existente ...
 
-        if (this.svgElement) {
-            this.init();
+    setAgeGroup(idade) {
+        // Tabela de Lund-Browder
+        let propCabeca = 4.5; // Adulto (cada metade = 4.5%, total 9%)
+        let propCoxa = 4.5;   // Adulto
+        let propPerna = 3.5;  // Adulto
+
+        if (idade < 1) {
+            propCabeca = 9.5;
+            propCoxa = 2.75;
+            propPerna = 2.5;
+        } else if (idade < 5) {
+            propCabeca = 8.5;
+            propCoxa = 3.25;
+            propPerna = 2.5;
+        } else if (idade < 10) {
+            propCabeca = 6.5;
+            propCoxa = 4.0;
+            propPerna = 2.75;
+        } else if (idade < 15) {
+            propCabeca = 5.5;
+            propCoxa = 4.25;
+            propPerna = 3.0;
         }
-    }
 
-    init() {
-        // Mapeia todos os elementos vetoriais marcados como região clicável
-        const regions = this.svgElement.querySelectorAll('.burn-region');
+        // Atualiza os data-attributes das regiões no SVG
+        document.querySelectorAll('#cabeca_ant, #cabeca_post').forEach(el => el.dataset.porcentagem = propCabeca);
+        document.querySelectorAll('[id^="coxa_"]').forEach(el => el.dataset.porcentagem = propCoxa);
+        document.querySelectorAll('[id^="perna_"]').forEach(el => el.dataset.porcentagem = propPerna);
 
-        regions.forEach(region => {
-            // Estilização inicial via script ou CSS
-            region.style.cursor = 'pointer';
-            region.style.transition = 'fill 0.2s ease, opacity 0.2s ease';
-
-            // Evento de clique para alternar seleção da área
-            region.addEventListener('click', (e) => {
-                const target = e.currentTarget;
-                target.classList.toggle('selected');
-
-                if (target.classList.contains('selected')) {
-                    target.style.fill = 'var(--accent-red)';
-                    target.style.opacity = '0.85';
-                } else {
-                    target.style.fill = 'var(--border-color)';
-                    target.style.opacity = '1';
-                }
-
-                this.calcularSCQ();
-            });
-        });
-    }
-
-    calcularSCQ() {
-        const selectedRegions = this.svgElement.querySelectorAll('.burn-region.selected');
-        let somaSCQ = 0;
-
-        selectedRegions.forEach(region => {
-            // Captura a porcentagem definida no atributo data-porcentagem do SVG
-            const val = parseFloat(region.dataset.porcentagem) || 0;
-            somaSCQ += val;
-        });
-
-        this.totalSCQ = somaSCQ;
-
-        if (this.scqDisplay) {
-            this.scqDisplay.innerText = this.totalSCQ.toFixed(1);
-        }
-    }
-
-    // Método público para resetar seleções via interface se necessário
-    resetarSelecao() {
-        const regions = this.svgElement.querySelectorAll('.burn-region');
-        regions.forEach(region => {
-            region.classList.remove('selected');
-            region.style.fill = 'var(--border-color)';
-            region.style.opacity = '1';
-        });
-        this.totalSCQ = 0;
-        if (this.scqDisplay) {
-            this.scqDisplay.innerText = '0';
-        }
+        // Atualiza o rótulo de faixa etária na tela
+        const label = document.getElementById('faixa-etaria-label');
+        if (label) label.innerText = idade < 15 ? `Pediátrico (${idade} anos)` : 'Adulto';
+        
+        // Recalcular SCQ total ativo
+        this.recalcularSCQ();
     }
 }

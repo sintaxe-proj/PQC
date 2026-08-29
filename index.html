@@ -135,12 +135,13 @@
             border-color: var(--accent-blue);
         }
 
+        /* SVG Container & Burn Regions */
         .svg-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 320px;
+            min-height: 340px;
             background: rgba(15, 23, 42, 0.5);
             border-radius: 6px;
             border: 1px dashed var(--border-color);
@@ -158,6 +159,28 @@
             border-radius: 20px;
             font-weight: bold;
             font-size: 1.1rem;
+            z-index: 10;
+        }
+
+        .burn-region {
+            fill: #475569;
+            stroke: #0f172a;
+            stroke-width: 1.5;
+            cursor: pointer;
+            transition: fill 0.2s ease, opacity 0.2s ease;
+        }
+
+        .burn-region:hover {
+            fill: var(--accent-blue);
+            opacity: 0.8;
+        }
+
+        .text-label {
+            font-family: system-ui, sans-serif;
+            font-size: 11px;
+            fill: #94a3b8;
+            pointer-events: none;
+            font-weight: 600;
         }
 
         .results-box {
@@ -260,27 +283,58 @@
                     </div>
                 </div>
 
-                <!-- 2. MAPA CORPORAL SVG -->
+                <!-- 2. MAPA CORPORAL VETORIAL (SVG) -->
                 <div class="card">
                     <div class="card-title">
                         <span>2. Mapeamento de Superfície Corporal (SCQ)</span>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">Clique para selecionar</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Clique nas áreas afetadas</span>
                     </div>
 
                     <div class="svg-container">
                         <div class="scq-badge">SCQ: <span id="scq-display">0</span>%</div>
-                        <!-- O vetor SVG interativo entra nesta área -->
-                        <svg width="180" height="260" viewBox="0 0 100 200" style="fill: var(--border-color);">
-                            <circle cx="50" cy="20" r="15" />
-                            <rect x="35" y="38" width="30" height="60" rx="4" />
-                            <rect x="15" y="40" width="16" height="50" rx="3" />
-                            <rect x="69" y="40" width="16" height="50" rx="3" />
-                            <rect x="37" y="102" width="12" height="70" rx="3" />
-                            <rect x="51" y="102" width="12" height="70" rx="3" />
+                        
+                        <svg id="body-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 360" width="100%" height="auto">
+                          <!-- Visão Anterior -->
+                          <g id="visao-anterior">
+                            <text x="100" y="20" text-anchor="middle" class="text-label">ANTERIOR</text>
+                            <path id="cabeca_ant" class="burn-region" data-porcentagem="4.5" d="M85 30 C85 30 100 20 115 30 C120 45 115 65 115 65 L85 65 Z" />
+                            <path id="torax_ant" class="burn-region" data-porcentagem="9.0" d="M70 70 L130 70 L125 125 L75 125 Z" />
+                            <path id="abdomen_ant" class="burn-region" data-porcentagem="9.0" d="M75 127 L125 127 L120 180 L80 180 Z" />
+                            <path id="genitalia" class="burn-region" data-porcentagem="1.0" d="M92 181 L108 181 L104 195 L96 195 Z" />
+                            
+                            <path id="braco_dir_ant" class="burn-region" data-porcentagem="2.25" d="M52 73 L67 71 L63 120 L50 120 Z" />
+                            <path id="antebra_mao_dir_ant" class="burn-region" data-porcentagem="2.25" d="M50 122 L63 122 L58 180 L43 180 Z" />
+
+                            <path id="braco_esq_ant" class="burn-region" data-porcentagem="2.25" d="M133 71 L148 73 L150 120 L137 120 Z" />
+                            <path id="antebra_mao_esq_ant" class="burn-region" data-porcentagem="2.25" d="M137 122 L150 122 L157 180 L142 180 Z" />
+
+                            <path id="coxa_dir_ant" class="burn-region" data-porcentagem="4.5" d="M78 182 L94 182 L91 255 L73 255 Z" />
+                            <path id="perna_pe_dir_ant" class="burn-region" data-porcentagem="4.5" d="M73 257 L91 257 L87 335 L67 335 Z" />
+
+                            <path id="coxa_esq_ant" class="burn-region" data-porcentagem="4.5" d="M106 182 L122 182 L127 255 L109 255 Z" />
+                            <path id="perna_pe_esq_ant" class="burn-region" data-porcentagem="4.5" d="M109 257 L127 257 L133 335 L113 335 Z" />
+                          </g>
+
+                          <!-- Visão Posterior -->
+                          <g id="visao-posterior">
+                            <text x="300" y="20" text-anchor="middle" class="text-label">POSTERIOR</text>
+                            <path id="cabeca_post" class="burn-region" data-porcentagem="4.5" d="M285 30 C285 30 300 20 315 30 C320 45 315 65 315 65 L285 65 Z" />
+                            <path id="dorso_sup_post" class="burn-region" data-porcentagem="9.0" d="M270 70 L330 70 L325 125 L275 125 Z" />
+                            <path id="dorso_inf_post" class="burn-region" data-porcentagem="9.0" d="M275 127 L325 127 L322 190 L278 190 Z" />
+
+                            <path id="braco_dir_post" class="burn-region" data-porcentagem="2.25" d="M252 73 L267 71 L263 120 L250 120 Z" />
+                            <path id="antebra_mao_dir_post" class="burn-region" data-porcentagem="2.25" d="M250 122 L263 122 L258 180 L243 180 Z" />
+
+                            <path id="braco_esq_post" class="burn-region" data-porcentagem="2.25" d="M333 71 L348 73 L350 120 L337 120 Z" />
+                            <path id="antebra_mao_esq_post" class="burn-region" data-porcentagem="2.25" d="M337 122 L350 122 L357 180 L342 180 Z" />
+
+                            <path id="coxa_dir_post" class="burn-region" data-porcentagem="4.5" d="M277 192 L296 192 L291 255 L273 255 Z" />
+                            <path id="perna_pe_dir_post" class="burn-region" data-porcentagem="4.5" d="M273 257 L291 257 L287 335 L267 335 Z" />
+
+                            <path id="coxa_esq_post" class="burn-region" data-porcentagem="4.5" d="M304 192 L323 192 L327 255 L309 255 Z" />
+                            <path id="perna_pe_esq_post" class="burn-region" data-porcentagem="4.5" d="M309 257 L327 257 L333 335 L313 335 Z" />
+                          </g>
                         </svg>
-                        <p style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">
-                            [Seletor anátomo-vetorial via Regra dos Noves]
-                        </p>
                     </div>
                 </div>
 
@@ -352,7 +406,7 @@
         </form>
     </div>
 
-    <!-- Módulos JavaScript -->
+    <!-- Módulo JS principal -->
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

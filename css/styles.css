@@ -1,1 +1,246 @@
+/* css/styles.css */
+/* Tema Claro com sobreposições em Verde Claro - PQC-HFA */
 
+:root {
+    --bg-primary: #f4f8f6;          /* Fundo geral claro com toque suave de verde */
+    --bg-card: #ffffff;             /* Fundo dos cards em branco puro */
+    --bg-input: #f0f7f4;            /* Fundo dos inputs em verde claro bem suave */
+    --border-color: #d1e2db;        /* Bordas sutis em tom verde-acinzentado */
+    --text-main: #1d2d25;           /* Texto principal escuro (alta legibilidade) */
+    --text-muted: #536b5e;          /* Texto secundário em verde musgo suave */
+    
+    /* Paleta de Acentos (Verde Claro & Acompanhantes) */
+    --accent-green-primary: #10b981;/* Verde principal para destaques */
+    --accent-green-light: #d1fae5;  /* Sobreposição em verde claro pastel */
+    --accent-green-hover: #059669;  /* Verde mais escuro para estados de hover */
+    --accent-red: #dc2626;          /* Vermelho para queimaduras/balanço negativo */
+    --accent-amber: #d97706;        /* Âmbar para alertas de vazão */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-main);
+    padding: 24px;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Cabeçalho */
+header {
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 16px;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    color: var(--accent-green-hover);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 4px;
+}
+
+.badge-hfa {
+    background: var(--accent-red);
+    color: #ffffff;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* Grid Layout */
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media (min-width: 992px) {
+    .grid-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Cards */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05);
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent-green-hover);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Formulários e Inputs */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+input, select {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+input:focus, select:focus {
+    border-color: var(--accent-green-primary);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* Contêiner SVG com sobreposição Verde Claro */
+.svg-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 340px;
+    background: var(--accent-green-light);
+    border-radius: 8px;
+    border: 1px dashed var(--accent-green-primary);
+    padding: 16px;
+    position: relative;
+}
+
+.scq-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--accent-red);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+}
+
+/* Regiões do SVG */
+.burn-region {
+    fill: #a7f3d0;                 /* Verde pastel claro para áreas normais */
+    stroke: #059669;               /* Borda em verde esmeralda */
+    stroke-width: 1.2;
+    cursor: pointer;
+    transition: fill 0.2s ease, opacity 0.2s ease;
+}
+
+.burn-region:hover {
+    fill: #34d399;                 /* Verde mais vivo ao passar o mouse */
+    opacity: 0.9;
+}
+
+.burn-region.selected {
+    fill: var(--accent-red);       /* Destaque em vermelho para indicar queimadura */
+    stroke: #991b1b;
+    opacity: 0.85;
+}
+
+.text-label {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    fill: var(--text-muted);
+    pointer-events: none;
+    font-weight: 700;
+}
+
+/* Painel de Resultados */
+.results-box {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.metric-row:last-child {
+    border-bottom: none;
+}
+
+.metric-value {
+    font-weight: bold;
+    color: var(--accent-green-hover);
+}
+
+/* Botão Principal */
+.btn-calc {
+    width: 100%;
+    background-color: var(--accent-green-primary);
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 16px;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-calc:hover {
+    background-color: var(--accent-green-hover);
+}
+
+.btn-calc:active {
+    transform: scale(0.99);
+}

@@ -1,0 +1,22 @@
+{
+  "short_name": "PQC HFA",
+  "name": "PQC - Percentual de Queima Corporal (HFA)",
+  "description": "Calculadora Clínica de Ressuscitação Volêmica e Balanço Hídrico Avançado",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#1A202C",
+  "theme_color": "#2B6CB0",
+  "display": "standalone",
+  "orientation": "portrait-primary"
+}

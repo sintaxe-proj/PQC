@@ -4,7 +4,20 @@
 export class SVGInteractive {
     constructor(svgElementId, onUpdateCallback) {
         this.svgElement = document.getElementById(svgElementId);
-        this.onUpdateCallback = onUpdateCallback;
+        
+        // Trata o parâmetro caso seja passado uma String de ID em vez de uma função callback
+        if (typeof onUpdateCallback === 'string') {
+            const elementId = onUpdateCallback;
+            this.onUpdateCallback = (totalSCQ) => {
+                const displayEl = document.getElementById(elementId);
+                if (displayEl) {
+                    displayEl.innerText = `${totalSCQ.toFixed(1)}%`;
+                }
+            };
+        } else {
+            this.onUpdateCallback = onUpdateCallback;
+        }
+
         this.selectedRegions = new Set();
         this.currentAge = 25; // Default Adulto
 
@@ -16,15 +29,25 @@ export class SVGInteractive {
     }
 
     init() {
-        // Adiciona evento de clique em todos os caminhos/grupos interativos do SVG
-        const clickableElements = this.svgElement.querySelectorAll('[data-porcentagem], path, g');
+        // Busca elementos interativos com ID ou atributos válidos
+        const clickableElements = this.svgElement.querySelectorAll('.burn-region, [data-porcentagem], path, rect, polygon');
         
         clickableElements.forEach(element => {
             element.style.cursor = 'pointer';
-            element.addEventListener('click', (e) => this.toggleRegion(e.currentTarget));
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Sobe até o ancestral mais próximo que possua ID ou data-porcentagem
+                let target = e.currentTarget;
+                if (!target.id && !target.dataset.porcentagem && target.parentElement) {
+                    target = target.closest('[id], [data-porcentagem]') || target;
+                }
+                
+                this.toggleRegion(target);
+            });
         });
 
-        // Aplica tabela inicial
+        // Aplica tabela inicial de Lund-Browder
         this.setAgeGroup(this.currentAge);
     }
 
@@ -34,8 +57,8 @@ export class SVGInteractive {
     setAgeGroup(idade) {
         this.currentAge = parseFloat(idade) || 0;
 
-        // Proporções por região (valores base por lado/metade quando aplicável)
-        let propCabeca = 4.5; // Adulto (Frontal: 4.5%, Posterior: 4.5% = 9% total)
+        // Proporções por região (valores base por lado/metade)
+        let propCabeca = 4.5; // Adulto (Ant: 4.5%, Post: 4.5%)
         let propCoxa = 4.5;   // Adulto (Cada coxa ant/post = 4.5%)
         let propPerna = 3.5;  // Adulto (Cada perna ant/post = 3.5%)
 
@@ -57,18 +80,17 @@ export class SVGInteractive {
             propPerna = 3.0;
         }
 
-        // Atualiza os data-attributes no SVG de forma dinâmica
+        // Atualiza os data-attributes no SVG dinamicamente
         this.updateRegionData('#cabeca_ant, #cabeca_post, [id*="cabeca"]', propCabeca);
         this.updateRegionData('[id*="coxa"]', propCoxa);
         this.updateRegionData('[id*="perna"]', propPerna);
 
-        // Atualiza o indicador textual na interface se existir
+        // Indicador de faixa etária na UI
         const labelEtaria = document.getElementById('faixa-etaria-label');
         if (labelEtaria) {
             labelEtaria.innerText = this.currentAge < 15 ? `Pediátrico (${this.currentAge} anos)` : 'Adulto (15+ anos)';
         }
 
-        // Recalcula o SCQ total com os novos valores
         this.recalcularSCQ();
     }
 
@@ -82,16 +104,18 @@ export class SVGInteractive {
 
     toggleRegion(element) {
         const id = element.id || element.getAttribute('name');
-        if (!id) return;
+        
+        // Se não houver id direto, utiliza a referência do elemento
+        const key = id || element;
 
-        if (this.selectedRegions.has(id)) {
-            this.selectedRegions.delete(id);
+        if (this.selectedRegions.has(key)) {
+            this.selectedRegions.delete(key);
             element.classList.remove('selected', 'active');
-            element.style.fill = ''; // Reseta para a cor original
+            element.style.fill = ''; 
         } else {
-            this.selectedRegions.add(id);
+            this.selectedRegions.add(key);
             element.classList.add('selected', 'active');
-            element.style.fill = '#e74c3c'; // Destaque visual (vermelho queimadura)
+            element.style.fill = '#dc2626'; // Vermelho de destaque da queimadura
         }
 
         this.recalcularSCQ();
@@ -100,17 +124,25 @@ export class SVGInteractive {
     recalcularSCQ() {
         let totalSCQ = 0;
 
-        this.selectedRegions.forEach(regionId => {
-            const el = this.svgElement.querySelector(`#${regionId}`);
-            if (el && el.dataset.porcentagem) {
-                totalSCQ += parseFloat(el.dataset.porcentagem) || 0;
+        this.selectedRegions.forEach(key => {
+            let el = null;
+            if (typeof key === 'string') {
+                el = this.svgElement.querySelector(`#${key}`) || this.svgElement.querySelector(`[name="${key}"]`);
+            } else {
+                el = key;
+            }
+
+            if (el) {
+                // Tenta buscar o valor do data-porcentagem no elemento ou nos seus dataset
+                const val = parseFloat(el.dataset.porcentagem || el.getAttribute('data-porcentagem')) || 0;
+                totalSCQ += val;
             }
         });
 
-        // Limita o máximo teórico a 100%
+        // Trava no limite de 100%
         totalSCQ = Math.min(totalSCQ, 100);
 
-        // Dispara o callback para notificar a aplicação principal (app.js)
+        // Notifica o app.js e atualiza o display
         if (typeof this.onUpdateCallback === 'function') {
             this.onUpdateCallback(totalSCQ, Array.from(this.selectedRegions));
         }

@@ -95,13 +95,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const volManutencao = volumeTotal24h * 0.5;
             const vazaoManutencaoMLh = volManutencao / 16;
 
-            // 5. Cálculo do Balanço Hídrico via módulo FluidBalance
+            // 5. Cálculo do Balanço Hídrico e Tonicidade via módulo FluidBalance
             const balancoResult = fluidCalculator.calculate({
                 entradas: document.getElementById('entradas')?.value,
                 diurese: document.getElementById('diurese')?.value,
                 emese: document.getElementById('emese')?.value,
                 compressas: document.getElementById('compressas')?.value,
-                outrasPerdas: document.getElementById('outrasPerdas')?.value
+                outrasPerdas: document.getElementById('outrasPerdas')?.value,
+                peso: peso,
+                naSerico: document.getElementById('naSerico')?.value,
+                naInfusao: document.getElementById('naInfusao')?.value,
+                volumeParklandML: volumeTotal24h
             });
 
             // 6. Renderização dos resultados no painel de saída
@@ -111,18 +115,34 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('res-vazao-ataque').innerText = `${vazaoAtaqueMLh.toFixed(1)} mL/h`;
             document.getElementById('res-vol-manutencao').innerText = `${volManutencao.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL (${vazaoManutencaoMLh.toFixed(1)} mL/h)`;
             
+            // Renderização do Balanço Hídrico Acumulado
             const elBalanco = document.getElementById('res-balanco');
             if (elBalanco && balancoResult) {
                 const sinal = balancoResult.balancoFinal > 0 ? '+' : '';
                 elBalanco.innerText = `${sinal}${balancoResult.balancoFinal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mL`;
                 
-                // Cor dinâmica do Balanço Hídrico
                 if (balancoResult.balancoFinal < 0) {
                     elBalanco.style.color = 'var(--accent-red)';
                 } else if (balancoResult.balancoFinal > 0) {
                     elBalanco.style.color = 'var(--accent-green)';
                 } else {
                     elBalanco.style.color = 'var(--text-main)';
+                }
+            }
+
+            // Renderização do Impacto Osmolar Projetado (ΔNa⁺)
+            const elImpactoNa = document.getElementById('res-impacto-na');
+            if (elImpactoNa && balancoResult) {
+                const sinalNa = balancoResult.variacaoNaEstimada > 0 ? '+' : '';
+                elImpactoNa.innerText = `${sinalNa}${balancoResult.variacaoNaEstimada} mEq/L (Proj: ${balancoResult.naSericoProjetado} mEq/L)`;
+                
+                // Alertas de variação brusca de sódio em 24h
+                if (Math.abs(balancoResult.variacaoNaEstimada) >= 8) {
+                    elImpactoNa.style.color = 'var(--accent-red)';
+                } else if (Math.abs(balancoResult.variacaoNaEstimada) >= 4) {
+                    elImpactoNa.style.color = 'var(--accent-amber)';
+                } else {
+                    elImpactoNa.style.color = 'var(--text-main)';
                 }
             }
         });

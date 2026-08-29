@@ -1,0 +1,93 @@
+<svg id="body-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 550" width="100%" height="auto">
+  <style>
+    .burn-region {
+      fill: #475569;
+      stroke: #0f172a;
+      stroke-width: 1.5;
+      cursor: pointer;
+      transition: fill 0.2s ease, opacity 0.2s ease;
+    }
+    .burn-region:hover {
+      fill: #38bdf8;
+      opacity: 0.8;
+    }
+    .text-label {
+      font-family: system-ui, sans-serif;
+      font-size: 11px;
+      fill: #94a3b8;
+      pointer-events: none;
+      font-weight: 600;
+    }
+  </style>
+
+  <!-- Visão Anterior -->
+  <g id="visao-anterior">
+    <text x="100" y="25" text-anchor="middle" class="text-label">ANTERIOR</text>
+    
+    <!-- Cabeça e Pescoço Ant. (4.5%) -->
+    <path id="cabeca_ant" class="burn-region" data-porcentagem="4.5" d="M85 35 C85 35 100 25 115 35 C120 50 115 70 115 70 L85 70 Z" />
+    
+    <!-- Tronco Anterior Superior / Tórax (9%) -->
+    <path id="torax_ant" class="burn-region" data-porcentagem="9.0" d="M70 75 L130 75 L125 130 L75 130 Z" />
+    
+    <!-- Tronco Anterior Inferior / Abdômen (9%) -->
+    <path id="abdomen_ant" class="burn-region" data-porcentagem="9.0" d="M75 132 L125 132 L120 185 L80 185 Z" />
+    
+    <!-- Genitália (1%) -->
+    <path id="genitalia" class="burn-region" data-porcentagem="1.0" d="M92 186 L108 186 L104 200 L96 200 Z" />
+    
+    <!-- Braço Direito Ant. (2.25%) -->
+    <path id="braco_dir_ant" class="burn-region" data-porcentagem="2.25" d="M52 78 L67 76 L63 125 L50 125 Z" />
+    <!-- Antebraço e Mão Dir. Ant. (2.25%) -->
+    <path id="antebra_mao_dir_ant" class="burn-region" data-porcentagem="2.25" d="M50 127 L63 127 L58 185 L43 185 Z" />
+
+    <!-- Braço Esquerdo Ant. (2.25%) -->
+    <path id="braco_esq_ant" class="burn-region" data-porcentagem="2.25" d="M133 76 L148 78 L150 125 L137 125 Z" />
+    <!-- Antebraço e Mão Esque. Ant. (2.25%) -->
+    <path id="antebra_mao_esq_ant" class="burn-region" data-porcentagem="2.25" d="M137 127 L150 127 L157 185 L142 185 Z" />
+
+    <!-- Coxa Direita Ant. (4.5%) -->
+    <path id="coxa_dir_ant" class="burn-region" data-porcentagem="4.5" d="M78 187 L94 187 L91 260 L73 260 Z" />
+    <!-- Perna e Pé Direito Ant. (4.5%) -->
+    <path id="perna_pe_dir_ant" class="burn-region" data-porcentagem="4.5" d="M73 262 L91 262 L87 340 L67 340 Z" />
+
+    <!-- Coxa Esquerda Ant. (4.5%) -->
+    <path id="coxa_esq_ant" class="burn-region" data-porcentagem="4.5" d="M106 187 L122 187 L127 260 L109 260 Z" />
+    <!-- Perna e Pé Esquerdo Ant. (4.5%) -->
+    <path id="perna_pe_esq_ant" class="burn-region" data-porcentagem="4.5" d="M109 262 L127 262 L133 340 L113 340 Z" />
+  </g>
+
+  <!-- Visão Posterior -->
+  <g id="visao-posterior">
+    <text x="300" y="25" text-anchor="middle" class="text-label">POSTERIOR</text>
+    
+    <!-- Cabeça e Pescoço Post. (4.5%) -->
+    <path id="cabeca_post" class="burn-region" data-porcentagem="4.5" d="M285 35 C285 35 300 25 315 35 C320 50 315 70 315 70 L285 70 Z" />
+    
+    <!-- Dorso Superior (9%) -->
+    <path id="dorso_sup_post" class="burn-region" data-porcentagem="9.0" d="M270 75 L330 75 L325 130 L275 130 Z" />
+    
+    <!-- Dorso Inferior / Lombar / Glúteos (9%) -->
+    <path id="dorso_inf_post" class="burn-region" data-porcentagem="9.0" d="M275 132 L325 132 L322 195 L278 195 Z" />
+
+    <!-- Braço Direito Post. (2.25%) -->
+    <path id="braco_dir_post" class="burn-region" data-porcentagem="2.25" d="M252 78 L267 76 L263 125 L250 125 Z" />
+    <!-- Antebraço e Mão Dir. Post. (2.25%) -->
+    <path id="antebra_mao_dir_post" class="burn-region" data-porcentagem="2.25" d="M250 127 L263 127 L258 185 L243 185 Z" />
+
+    <!-- Braço Esquerdo Post. (2.25%) -->
+    <path id="braco_esq_post" class="burn-region" data-porcentagem="2.25" d="M333 76 L348 78 L350 125 L337 125 Z" />
+    <!-- Antebraço e Mão Esque. Post. (2.25%) -->
+    <path id="antebra_mao_esq_post" class="burn-region" data-porcentagem="2.25" d="M337 127 L350 127 L357 185 L342 185 Z" />
+
+    <!-- Coxa Direita Post. (4.5%) -->
+    <path id="coxa_dir_post" class="burn-region" data-porcentagem="4.5" d="M277 197 L296 197 L291 260 L273 260 Z" />
+    <!-- Perna e Pé Direito Post. (4.5%) -->
+    <path id="perna_pe_dir_post" class="burn-region" data-porcentagem="4.5" d="M273 262 L291 262 L287 340 L267 340 Z" />
+
+    <!-- Coxa Esquerda Post. (4.5%) -->
+    <path id="coxa_esq_post" class="burn-region" data-porcentagem="4.5" d="M304 197 L323 197 L327 260 L309 260 Z" />
+    <!-- Perna e Pé Esquerdo Post. (4.5%) -->
+    <path id="perna_pe_esq_post" class="burn-region" data-porcentagem="4.5" d="M309 262 L327 262 L333 340 L113 340 Z" />
+  </g>
+</svg>

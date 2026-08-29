@@ -1,13 +1,18 @@
 :root {
-    --bg-main: #0f172a;
-    --card-bg: #1e293b;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border-color: #334155;
-    --accent-red: #ef4444;
-    --accent-amber: #f59e0b;
-    --accent-green: #10b981;
-    --accent-blue: #3b82f6;
+    /* Fundo claro e limpo */
+    --bg-main: #f4f7f6;
+    --card-bg: #ffffff;
+    
+    /* Textos legíveis e profissionais */
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #cbd5e1;
+    
+    /* Cores de Destaque */
+    --accent-red: #dc2626;      /* Mantido para queimaduras e alertas */
+    --accent-amber: #d97706;    /* Avisos */
+    --accent-green: #059669;    /* Verde hospitalar principal */
+    --accent-blue: #0284c7;     /* Azul secundário */
 }
 
 * {
@@ -32,7 +37,7 @@ body {
 
 header {
     margin-bottom: 24px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--accent-green);
     padding-bottom: 16px;
 }
 
@@ -41,6 +46,7 @@ header h1 {
     display: flex;
     align-items: center;
     gap: 12px;
+    color: var(--accent-green);
 }
 
 .badge-hfa {
@@ -71,6 +77,7 @@ header p {
     padding: 20px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .card-title {
@@ -82,6 +89,7 @@ header p {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: var(--accent-green);
 }
 
 .form-grid {
@@ -103,10 +111,11 @@ header p {
 label {
     font-size: 0.85rem;
     color: var(--text-muted);
+    font-weight: 600;
 }
 
 input, select {
-    background-color: var(--bg-main);
+    background-color: #ffffff;
     border: 1px solid var(--border-color);
     color: var(--text-main);
     padding: 10px;
@@ -116,13 +125,14 @@ input, select {
 
 input:focus, select:focus {
     outline: none;
-    border-color: var(--accent-blue);
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 }
 
 /* SVG Mapa Corporal */
 .svg-container {
     position: relative;
-    background-color: var(--bg-main);
+    background-color: #ffffff;
     border-radius: 6px;
     padding: 10px;
     border: 1px solid var(--border-color);
@@ -132,12 +142,13 @@ input:focus, select:focus {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background: #ecfdf5;
+    border: 1px solid var(--accent-green);
     padding: 6px 12px;
     border-radius: 20px;
     font-weight: bold;
     font-size: 0.9rem;
+    color: var(--accent-green);
 }
 
 #scq-display {
@@ -151,15 +162,15 @@ input:focus, select:focus {
 }
 
 .burn-region {
-    fill: #475569;
-    stroke: #1e293b;
+    fill: #e2e8f0;
+    stroke: #cbd5e1;
     stroke-width: 1.5;
     cursor: pointer;
     transition: fill 0.2s ease, opacity 0.2s ease;
 }
 
 .burn-region:hover {
-    fill: #64748b;
+    fill: #a7f3d0; /* Verde bem claro ao passar o mouse */
 }
 
 /* Classe ativada via JS ao selecionar a área */
@@ -170,7 +181,7 @@ input:focus, select:focus {
 
 /* Painel de Resultados */
 .btn-calc {
-    background-color: var(--accent-blue);
+    background-color: var(--accent-green);
     color: white;
     border: none;
     padding: 12px;
@@ -180,14 +191,15 @@ input:focus, select:focus {
     transition: background 0.2s ease;
     width: 100%;
     margin-bottom: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-calc:hover {
-    background-color: #2563eb;
+    background-color: #047857;
 }
 
 .results-box {
-    background-color: var(--bg-main);
+    background-color: #f8fafc;
     border-radius: 6px;
     padding: 16px;
     display: flex;
